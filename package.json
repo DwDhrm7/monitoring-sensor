@@ -1,0 +1,29 @@
+{
+  "name": "astro-monitoring-dashboard",
+  "version": "1.0.0",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "test": "vitest",
+    "test:ui": "vitest --ui",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "astro": "^4.5.0",
+    "chart.js": "^4.4.1",
+    "mqtt": "^5.3.5"
+  },
+  "devDependencies": {
+    "@astrojs/react": "^3.0.0",
+    "@types/node": "^20.10.0",
+    "@vitest/ui": "^4.1.2",
+    "happy-dom": "^20.8.9",
+    "typescript": "^5.3.3",
+    "vitest": "^4.1.2"
+  }
+}

@@ -1,0 +1,532 @@
+---
+import { CROPS } from '../services/ml-model';
+
+interface CropPrediction {
+  cropId: string;
+  cropName: string;
+  harvestIn: number;
+  successRate: number;
+  recommendation: string;
+  riskFactors: string[];
+  details: {
+    temp: number;
+    humidity: number;
+    ec: number;
+    tds: number;
+  };
+}
+
+interface Props {
+  predictions: CropPrediction[];
+  dataPointCount: number;
+  currentMonth: number;
+  weatherData?: any;
+}
+
+const { predictions, dataPointCount, currentMonth, weatherData } = Astro.props;
+
+const monthNames = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
+const topPredictions = predictions.slice(0, 5);
+const harvestMonth = (currentMonth + 6) % 12;
+---
+
+<div class="recommendations-panel">
+  <div class="section-header">
+    <h2>🤖 Rekomendasi Tanaman (ML Model)</h2>
+    <span class="ml-badge">
+      {dataPointCount} data
+    </span>
+  </div>
+
+  {weatherData && (
+    <div class="weather-info">
+      <div class="weather-content">
+        <span class="weather-emoji">{weatherData.emoji || '🌤️'}</span>
+        <div class="weather-details">
+          <span class="weather-location">{weatherData.city}</span>
+          <span class="weather-desc">{weatherData.desc}</span>
+          <span class="weather-conditions">
+            {weatherData.temp}°C • 💧 {weatherData.humidity}% • 💨 {weatherData.windSpeed} km/h
+          </span>
+        </div>
+      </div>
+    </div>
+  )}
+
+  <div class="ml-period-info">
+    <div class="period-item">
+      <span class="period-label">Tanam</span>
+      <span class="period-month">{monthNames[currentMonth]}</span>
+    </div>
+    <span class="period-arrow">→</span>
+    <div class="period-item">
+      <span class="period-label">Panen</span>
+      <span class="period-month">{monthNames[harvestMonth]}</span>
+    </div>
+  </div>
+
+  {predictions.length === 0 ? (
+    <div class="ml-waiting">
+      <span>⏳ Menunggu cukup data sensor untuk mulai prediksi...</span>
+      <div class="progress-bar">
+        <div class="progress-fill" style={`width: ${(dataPointCount / 50) * 100}%`}></div>
+      </div>
+      <span class="progress-text">{dataPointCount}/50 data</span>
+    </div>
+  ) : (
+    <div class="predictions-grid">
+      {topPredictions.map((crop, index) => {
+        const cropConfig = CROPS[crop.cropId];
+        const difficultyColor =
+          cropConfig.difficulty === 'Mudah' ? '#2d8a4e' :
+          cropConfig.difficulty === 'Sedang' ? '#ff9800' : '#dc3545';
+
+        return (
+          <div class={`prediction-card rank-${index + 1}`}>
+            <div class="card-header">
+              <span class="crop-icon">{cropConfig.icon}</span>
+              <div class="crop-info">
+                <h3 class="crop-name">{crop.cropName}</h3>
+                <span class="crop-category">{cropConfig.category}</span>
+              </div>
+              <span class="crop-rank">#{index + 1}</span>
+            </div>
+
+            <div class="success-rate">
+              <div class="rate-bar">
+                <div class="rate-fill" style={`width: ${crop.successRate}%; background-color: ${
+                  crop.successRate >= 80 ? '#2d8a4e' :
+                  crop.successRate >= 60 ? '#ff9800' : '#dc3545'
+                }`}></div>
+              </div>
+              <span class="rate-percent">{Math.round(crop.successRate)}%</span>
+            </div>
+
+            <div class="crop-details">
+              <div class="detail-item">
+                <span class="detail-label">Suhu optimal</span>
+                <span class="detail-value">{cropConfig.ideal.tempMin}-{cropConfig.ideal.tempMax}°C</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Kelembapan</span>
+                <span class="detail-value">{cropConfig.ideal.humMin}-{cropConfig.ideal.humMax}%</span>
+              </div>
+              <div class="detail-item">
+                <span class="detail-label">Panen dalam</span>
+                <span class="detail-value">{crop.harvestIn} bulan</span>
+              </div>
+            </div>
+
+            <div class="recommendation">
+              <span class={`recommendation-badge ${crop.successRate < 50 ? 'danger' : crop.successRate < 70 ? 'warning' : 'success'}`}>
+                {crop.recommendation}
+              </span>
+            </div>
+
+            {crop.riskFactors.length > 0 && (
+              <div class="risk-factors">
+                <span class="risk-label">⚠ Risk factors:</span>
+                <ul>
+                  {crop.riskFactors.map((factor) => (
+                    <li key={factor}>{factor}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <p class="crop-tips">{cropConfig.tips}</p>
+
+            <div class="difficulty-badge" style={`background-color: ${difficultyColor}20; color: ${difficultyColor}`}>
+              Kesulitan: {cropConfig.difficulty}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+
+  <div class="ml-footer">
+    <span class="ml-footer-text">
+      💡 Model menggunakan statistical analysis dengan 13 tanaman Indonesia + Open-Meteo weather integration
+    </span>
+    <button class="btn btn-sm btn-outline ml-export-btn" id="ml-export-btn">
+      📥 Export Data CSV
+    </button>
+  </div>
+</div>
+
+<style>
+  .recommendations-panel {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    margin-top: 2rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .ml-badge {
+    display: inline-block;
+    background: rgba(45, 138, 78, 0.1);
+    color: var(--green-primary);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .weather-info {
+    background: linear-gradient(135deg, rgba(45, 138, 78, 0.05), rgba(59, 130, 246, 0.05));
+    border-radius: 10px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .weather-content {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .weather-emoji {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .weather-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .weather-location {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .weather-desc {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+
+  .weather-conditions {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+  }
+
+  .ml-period-info {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: var(--bg);
+    border-radius: 8px;
+  }
+
+  .period-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .period-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .period-month {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .period-arrow {
+    color: var(--text-secondary);
+    font-size: 1.25rem;
+  }
+
+  .ml-waiting {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-secondary);
+  }
+
+  .progress-bar {
+    width: 200px;
+    height: 6px;
+    background: var(--bg);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--green-primary);
+    transition: width 0.3s ease;
+  }
+
+  .progress-text {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .predictions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .prediction-card {
+    background: var(--bg);
+    border-radius: 10px;
+    padding: 1.25rem;
+    border-left: 4px solid var(--green-primary);
+    transition: all 0.3s ease;
+  }
+
+  .prediction-card.rank-2 {
+    border-left-color: #3b82f6;
+  }
+
+  .prediction-card.rank-3 {
+    border-left-color: #a67c52;
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .crop-icon {
+    font-size: 2rem;
+    line-height: 1;
+  }
+
+  .crop-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .crop-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .crop-category {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+
+  .crop-rank {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .success-rate {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .rate-bar {
+    flex: 1;
+    height: 6px;
+    background: var(--border-light);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .rate-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+  }
+
+  .rate-percent {
+    font-weight: 700;
+    color: var(--text-primary);
+    min-width: 40px;
+    text-align: right;
+  }
+
+  .crop-details {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-light);
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+  }
+
+  .detail-label {
+    color: var(--text-secondary);
+  }
+
+  .detail-value {
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .recommendation {
+    margin-bottom: 1rem;
+  }
+
+  .recommendation-badge {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  .recommendation-badge.success {
+    background: rgba(45, 138, 78, 0.1);
+    color: var(--green-primary);
+  }
+
+  .recommendation-badge.warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+  }
+
+  .recommendation-badge.danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  .risk-factors {
+    margin-bottom: 1rem;
+    padding: 0.75rem;
+    background: rgba(220, 53, 69, 0.05);
+    border-radius: 6px;
+  }
+
+  .risk-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #dc3545;
+  }
+
+  .risk-factors ul {
+    list-style: none;
+    padding: 0.5rem 0 0 0;
+    margin: 0.5rem 0 0 0;
+    border-top: 1px solid rgba(220, 53, 69, 0.2);
+  }
+
+  .risk-factors li {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding: 0.25rem 0;
+  }
+
+  .crop-tips {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 0 0 1rem 0;
+    font-style: italic;
+  }
+
+  .difficulty-badge {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+
+  .ml-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-light);
+    gap: 1rem;
+  }
+
+  .ml-footer-text {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+
+  @media (max-width: 768px) {
+    .recommendations-panel {
+      padding: 1rem;
+    }
+
+    .predictions-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .ml-footer {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .ml-export-btn {
+      width: 100%;
+    }
+  }
+</style>
+
+<script>
+  const exportBtn = document.getElementById('ml-export-btn');
+  if (exportBtn) {
+    exportBtn.addEventListener('click', async () => {
+      try {
+        const { mlModel } = await import('../services/ml-model');
+        const csv = mlModel.exportData();
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `agrisense-ml-data-${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } catch (error) {
+        console.error('Export failed:', error);
+      }
+    });
+  }
+</script>

@@ -1,0 +1,240 @@
+---
+interface Props {
+  sensorId: string;
+  label: string;
+  value: number;
+  min: number;
+  max: number;
+  unit: string;
+  icon: string;
+  color?: string;
+  threshold?: {
+    min?: number;
+    max?: number;
+  };
+}
+
+const { sensorId, label, value, min, max, unit, icon, color = '#2d8a4e', threshold } = Astro.props;
+
+// Calculate percentage for gauge bar
+const percentage = Math.max(0, Math.min(100, ((value - min) / (max - min)) * 100));
+
+// Determine status
+let status = 'normal';
+if (threshold) {
+  if (threshold.min !== undefined && value < threshold.min) status = 'warning';
+  else if (threshold.max !== undefined && value > threshold.max) status = 'danger';
+}
+
+// Determine color based on status and value position
+let gaugeColor = color;
+if (status === 'warning') gaugeColor = '#ff9800';
+else if (status === 'danger') gaugeColor = '#dc3545';
+---
+
+<div class={`gauge-card gauge-card-${sensorId} status-${status}`}>
+  <div class="gauge-header">
+    <span class="gauge-icon">{icon}</span>
+    <h3 class="gauge-label">{label}</h3>
+  </div>
+
+  <div class="gauge-value">
+    <span class="value-number">{value.toFixed(1)}</span>
+    <span class="value-unit">{unit}</span>
+  </div>
+
+  <div class="gauge-bar-container">
+    <div
+      class={`gauge-bar status-${status}`}
+      style={`width: ${percentage}%; background-color: ${gaugeColor};`}
+    ></div>
+  </div>
+
+  <div class="gauge-range">
+    <span class="range-min">{min}</span>
+    <span class="range-label">Rentang</span>
+    <span class="range-max">{max}</span>
+  </div>
+
+  {threshold && (
+    <div class="gauge-threshold">
+      {threshold.min !== undefined && (
+        <div class="threshold-line" style={`left: ${((threshold.min - min) / (max - min)) * 100}%`}>
+          <span class="threshold-tooltip">{threshold.min}</span>
+        </div>
+      )}
+      {threshold.max !== undefined && (
+        <div class="threshold-line max" style={`left: ${((threshold.max - min) / (max - min)) * 100}%`}>
+          <span class="threshold-tooltip">{threshold.max}</span>
+        </div>
+      )}
+    </div>
+  )}
+
+  <div class={`gauge-status-badge status-${status}`}>
+    {status === 'normal' && '✓ Normal'}
+    {status === 'warning' && '⚠ Peringatan'}
+    {status === 'danger' && '✗ Bahaya'}
+  </div>
+</div>
+
+<style>
+  .gauge-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--green-primary);
+  }
+
+  .gauge-card.status-warning {
+    border-left-color: #ff9800;
+    background: rgba(255, 152, 0, 0.02);
+  }
+
+  .gauge-card.status-danger {
+    border-left-color: #dc3545;
+    background: rgba(220, 53, 69, 0.02);
+  }
+
+  .gauge-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .gauge-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+  }
+
+  .gauge-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .gauge-value {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .value-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .value-unit {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+  }
+
+  .gauge-bar-container {
+    position: relative;
+    height: 8px;
+    background: var(--bg);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .gauge-bar {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.6s ease, background-color 0.3s ease;
+  }
+
+  .gauge-range {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+  }
+
+  .range-min, .range-max {
+    font-weight: 600;
+  }
+
+  .range-label {
+    flex: 1;
+    text-align: center;
+  }
+
+  .gauge-threshold {
+    position: relative;
+    height: 20px;
+    margin-bottom: 0.75rem;
+  }
+
+  .threshold-line {
+    position: absolute;
+    top: 0;
+    width: 2px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    cursor: help;
+  }
+
+  .threshold-line.max {
+    opacity: 0.8;
+  }
+
+  .threshold-tooltip {
+    position: absolute;
+    top: -18px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--text-secondary);
+    color: var(--surface);
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-size: 0.65rem;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+
+  .threshold-line:hover .threshold-tooltip {
+    opacity: 1;
+  }
+
+  .gauge-status-badge {
+    display: inline-block;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: rgba(45, 138, 78, 0.1);
+    color: var(--green-primary);
+  }
+
+  .gauge-status-badge.status-warning {
+    background: rgba(255, 152, 0, 0.1);
+    color: #ff9800;
+  }
+
+  .gauge-status-badge.status-danger {
+    background: rgba(220, 53, 69, 0.1);
+    color: #dc3545;
+  }
+
+  @media (max-width: 768px) {
+    .gauge-card {
+      padding: 1rem;
+    }
+
+    .value-number {
+      font-size: 1.5rem;
+    }
+  }
+</style>

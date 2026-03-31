@@ -1,0 +1,134 @@
+---
+import DashboardLayout from '../layouts/DashboardLayout.astro';
+---
+
+<DashboardLayout title="AgriSense — Smart Farm Monitor">
+
+  <!-- ═══════════ LOGIN PAGE ═══════════ -->
+  <div class="login-page" id="login-page">
+    <div class="login-card">
+      <div class="login-logo">
+        <span class="login-logo-icon">🌾</span>
+        <h2>Agri<span>Sense</span></h2>
+        <p>Smart Farm Monitoring System</p>
+      </div>
+      
+      <form class="login-form" id="login-form" onsubmit="return handleLogin(event)">
+        <div class="form-group">
+          <label for="login-user">Username</label>
+          <input type="text" id="login-user" class="form-input" placeholder="Masukkan username" autocomplete="username" required>
+        </div>
+        <div class="form-group">
+          <label for="login-pass">Password</label>
+          <input type="password" id="login-pass" class="form-input" placeholder="Masukkan password" autocomplete="current-password" required>
+        </div>
+        <div class="login-error" id="login-error">Username atau password salah</div>
+        <button type="submit" class="login-btn">Masuk</button>
+      </form>
+
+      <div class="login-footer">
+        © 2026 AgriSense · Monitoring Pertanian Cerdas
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ DASHBOARD ═══════════ -->
+  <div class="dashboard" id="dashboard">
+    <div class="container">
+
+      <!-- Header -->
+      <header>
+        <div class="header-left">
+          <span class="header-icon">🌾</span>
+          <div>
+            <h1>Agri<span>Sense</span></h1>
+            <p>Smart Farm Monitoring</p>
+          </div>
+        </div>
+        <div class="header-right">
+          <div class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span id="conn-label">Menghubungkan...</span>
+          </div>
+          <button
+            class="theme-switch"
+            id="btn-theme-toggle"
+            type="button"
+            onclick="toggleTheme()"
+            title="Ganti mode tampilan"
+            aria-label="Aktifkan dark mode"
+            aria-pressed="false"
+          >
+            <span class="theme-switch-label" id="theme-toggle-label">Dark</span>
+            <span class="theme-switch-track" aria-hidden="true">
+              <span class="theme-switch-thumb" id="theme-toggle-icon">☀️</span>
+            </span>
+          </button>
+          <button class="btn-header-action" id="btn-refresh" onclick="handleRefresh()" title="Refresh data tanpa reload halaman">Refresh</button>
+          <div class="user-badge">
+            <span class="user-avatar">AG</span>
+            <span id="user-display-name">User</span>
+          </div>
+          <button class="btn-logout" onclick="handleLogout()">Keluar</button>
+        </div>
+      </header>
+
+      <!-- Info Bar -->
+      <div class="info-bar">
+        <div class="info-bar-left">
+          <span id="last-update" style="font-size:12px;color:var(--text-muted);">–</span>
+          <span class="conn-badge" id="conn-badge">MQTT</span>
+        </div>
+      </div>
+
+      <!-- Alerts -->
+      <div id="alert-container"></div>
+
+      <!-- Sensor Sections (Generated Dynamically) -->
+      <div id="sensor-sections"></div>
+
+      <!-- Chart Sections (Generated Dynamically) -->
+      <div id="chart-sections"></div>
+
+      <!-- Smart Recommendation -->
+      <div class="sensor-section">
+        <div class="section-header">
+          <span class="section-label">Rekomendasi Tanam</span>
+          <span class="section-sub">Berdasarkan kondisi sensor saat ini</span>
+          <div class="section-line"></div>
+        </div>
+        <div class="chart-card" id="recommendation-panel">
+          <div id="recommendation-content">
+            <p style="color:var(--text-muted);font-size:13px;text-align:center;padding:20px;">Menunggu data sensor...</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Threshold (admin only) -->
+      <div class="chart-card" id="threshold-section" style="display:none;">
+        <div class="chart-header">
+          <span class="chart-title">Batas Peringatan</span>
+          <div style="display:flex; gap:8px;">
+            <button class="btn btn-outline btn-sm" id="btn-edit-thr" onclick="toggleEditThreshold(true)">Edit</button>
+            <button class="btn btn-outline btn-sm" id="btn-cancel-thr" onclick="toggleEditThreshold(false, true)" style="display:none;">Batal</button>
+            <button class="btn btn-green btn-sm" id="btn-save-thr" onclick="saveThresholdsButtonClick()" style="display:none;">Simpan</button>
+          </div>
+        </div>
+        <div class="threshold-grid" id="thr-container">
+          <!-- Generated dynamically -->
+        </div>
+      </div>
+
+      <!-- Log -->
+      <div class="log-card">
+        <div class="log-header">
+          <span class="log-title">Event Log</span>
+          <button class="btn btn-outline btn-sm" onclick="clearLog()">Clear</button>
+        </div>
+        <div id="log-body"></div>
+      </div>
+
+    </div>
+  </div>
+
+</DashboardLayout>

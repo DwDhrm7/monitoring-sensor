@@ -1,0 +1,223 @@
+---
+import Chart from 'chart.js/auto';
+
+interface Props {
+  groupId: string;
+  groupLabel: string;
+  sensors: Array<{
+    id: string;
+    label: string;
+    color: string;
+    backgroundColor: string;
+  }>;
+}
+
+const { groupId, groupLabel, sensors } = Astro.props;
+---
+
+<div class="chart-section">
+  <div class="section-header">
+    <h2>{groupLabel}</h2>
+    <span class="chart-refresh-indicator" id="chart-refresh-{groupId}">●</span>
+  </div>
+  
+  <div class="chart-container">
+    <canvas 
+      id="chart-canvas-{groupId}"
+      data-group-id={groupId}
+      data-sensors={JSON.stringify(sensors)}
+    ></canvas>
+  </div>
+
+  <div class="chart-legend">
+    {sensors.map((sensor) => (
+      <div class="legend-item">
+        <span class="legend-color" style={`background-color: ${sensor.color}`}></span>
+        <span class="legend-label">{sensor.label}</span>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .chart-section {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px var(--shadow-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .section-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  .chart-refresh-indicator {
+    font-size: 0.75rem;
+    color: var(--green-primary);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
+  }
+
+  .chart-container {
+    position: relative;
+    height: 300px;
+    margin-bottom: 1rem;
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    padding: 0.75rem 0;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .legend-color {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+  }
+</style>
+
+<script>
+  import { dataStore } from '../services/data-store';
+  import { SENSORS } from '../config/sensors';
+
+  const charts = new Map();
+
+  function initializeChart(canvas: HTMLCanvasElement) {
+    const groupId = canvas.dataset.groupId;
+    const sensorsData = JSON.parse(canvas.dataset.sensors || '[]');
+
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const datasets = sensorsData.map((sensor: any, index: number) => {
+      const sensorConfig = SENSORS[sensor.id];
+      const history = dataStore.getHistory(sensor.id);
+
+      return {
+        label: sensor.label,
+        data: history.map((h) => h.value),
+        borderColor: sensor.color,
+        backgroundColor: sensor.backgroundColor,
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointBackgroundColor: sensor.color,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 2,
+      };
+    });
+
+    const chart = new (window as any).Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: dataStore.getHistory(sensorsData[0].id).map((_, i) =>
+          i % 5 === 0 ? i : ''
+        ),
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index',
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0,0,0,0.8)',
+            padding: 10,
+            cornerRadius: 4,
+            boxPadding: 6,
+            callbacks: {
+              label: (context: any) => {
+                const value = context.parsed.y;
+                const sensor = sensorsData[context.datasetIndex];
+                return `${sensor.label}: ${value.toFixed(1)}`;
+              },
+            },
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: false,
+            grid: {
+              color: 'var(--border-light)',
+              drawBorder: false,
+            },
+            ticks: {
+              color: 'var(--text-secondary)',
+              font: {
+                size: 11,
+              },
+            },
+          },
+          x: {
+            grid: {
+              display: false,
+            },
+            ticks: {
+              color: 'var(--text-secondary)',
+              font: {
+                size: 11,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    charts.set(groupId, chart);
+  }
+
+  function updateCharts() {
+    document.querySelectorAll('canvas[data-group-id]').forEach((canvas) => {
+      const groupId = canvas.getAttribute('data-group-id');
+      const chart = charts.get(groupId);
+
+      if (!chart) {
+        initializeChart(canvas as HTMLCanvasElement);
+        const indicator = document.getElementById(`chart-refresh-${groupId}`);
+        if (indicator) indicator.style.opacity = '0.3';
+      }
+    });
+  }
+
+  // Initialize on mount
+  document.addEventListener('DOMContentLoaded', updateCharts);
+  updateCharts();
+
+  // Update every 5 seconds
+  setInterval(updateCharts, 5000);
+</script>
