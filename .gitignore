@@ -10,3 +10,10 @@ dist/
 *.swo
 ~*
 .astro/
+public/js/config/config.local.js
+public/js/config/sensors.config.local.js
+js/config/config.local.js
+*.local.js
+!src/config/sensors.ts
+!public/js/config/config.js
+!public/js/config/sensors.config.js

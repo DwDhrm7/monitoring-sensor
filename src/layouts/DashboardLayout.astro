@@ -3,7 +3,19 @@ export interface Props {
   title?: string;
 }
 const { title = "AgriSense — Smart Farm Monitor" } = Astro.props;
+
+// Inject environment variables to the client context
+const mqttConfig = {
+  brokerUrl: import.meta.env.PUBLIC_MQTT_BROKER_URL,
+  brokerUrls: import.meta.env.PUBLIC_MQTT_BROKER_URLS?.split(',') || [],
+  username: import.meta.env.PUBLIC_MQTT_USERNAME,
+  password: import.meta.env.PUBLIC_MQTT_PASSWORD,
+};
 ---
+<script is:inline define:vars={{ mqttConfig }}>
+  // Ensure the config object exists before our vanilla scripts load
+  window.MQTT_CONFIG = Object.assign({}, window.MQTT_CONFIG, mqttConfig);
+</script>
 <!DOCTYPE html>
 <html lang="id">
 <head>
