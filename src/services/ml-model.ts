@@ -692,8 +692,7 @@ function predictCropHarvest(
 
   let totalScore = 0;
   cropMonths.forEach((mon, idx) => {
-    const stageKey =
-      idx === 0 ? 'seedling' : idx < growthMonths - 1 ? 'vegetative' : 'harvest';
+    const stageKey = idx === 0 ? 'seedling' : idx < growthMonths - 1 ? 'vegetative' : 'harvest';
     const stageWeight = crop.stageWeights[stageKey as keyof typeof crop.stageWeights];
     const monthScore = predictCropAtMonth(crop, mon);
     totalScore += monthScore * stageWeight;
@@ -755,10 +754,17 @@ class MLModel {
           riskFactors.push('Kondisi tidak sesuai ideal');
         } else if (successRate < 70) {
           recommendation = '⚠ Cocok dengan perhatian khusus';
-          if (features.temp.mean && (features.temp.mean < crop.ideal.tempMin || features.temp.mean > crop.ideal.tempMax)) {
+          if (
+            features.temp.mean &&
+            (features.temp.mean < crop.ideal.tempMin || features.temp.mean > crop.ideal.tempMax)
+          ) {
             riskFactors.push('Suhu di luar rentang optimal');
           }
-          if (features.humidity.mean && (features.humidity.mean < crop.ideal.humMin || features.humidity.mean > crop.ideal.humMax)) {
+          if (
+            features.humidity.mean &&
+            (features.humidity.mean < crop.ideal.humMin ||
+              features.humidity.mean > crop.ideal.humMax)
+          ) {
             riskFactors.push('Kelembapan kurang ideal');
           }
         }

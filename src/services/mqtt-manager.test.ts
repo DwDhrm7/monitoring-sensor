@@ -67,7 +67,7 @@ describe('MQTT Manager Service - Integration Tests', () => {
     it('should accept message and status callbacks', () => {
       const messageHandler = vi.fn();
       const statusHandler = vi.fn();
-      
+
       expect(() => {
         manager.connect(messageHandler, statusHandler);
       }).not.toThrow();
@@ -87,7 +87,12 @@ describe('MQTT Manager Service - Integration Tests', () => {
   describe('Status Tracking', () => {
     it('should return valid status', () => {
       const status = manager.getStatus();
-      const validStatuses = ['disconnected', 'connected_no_data', 'connected_stale', 'connected_live'];
+      const validStatuses = [
+        'disconnected',
+        'connected_no_data',
+        'connected_stale',
+        'connected_live',
+      ];
       expect(validStatuses).toContain(status);
     });
 

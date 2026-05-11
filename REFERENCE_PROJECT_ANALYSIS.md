@@ -41,6 +41,7 @@
 ### Core Services (Backend Logic)
 
 #### `js/services/mqtt-manager.js` (361 lines)
+
 - **Purpose**: MQTT over WebSocket connection manager
 - **Features**:
   - Multiple broker URL fallback support
@@ -53,6 +54,7 @@
 - **Exported**: `mqttManager` (singleton)
 
 #### `js/services/data-store.js` (131 lines)
+
 - **Purpose**: Centralized state container for all sensor readings
 - **Features**:
   - In-memory history (max 20 entries per sensor)
@@ -65,6 +67,7 @@
 - **Exported**: `dataStore` (singleton)
 
 #### `js/services/sensor-service.js` (181 lines)
+
 - **Purpose**: High-level sensor reading processor
 - **Features**:
   - Reading validation & clamping to sensor ranges
@@ -79,6 +82,7 @@
 - **Exported**: `sensorService` (singleton)
 
 #### `js/services/threshold-service.js` (159 lines)
+
 - **Purpose**: Violation detection & alerting management
 - **Features**:
   - Per-sensor min/max threshold configuration
@@ -91,6 +95,7 @@
 ### Rendering & Visualization
 
 #### `js/renderer/chart-manager.js` (174 lines)
+
 - **Purpose**: Dynamic chart creation using Chart.js
 - **Features**:
   - Multi-sensor line charts per sensor group
@@ -104,6 +109,7 @@
 - **Exported**: `chartManager` (singleton)
 
 #### `js/renderer/gauge-renderer.js` (116 lines)
+
 - **Purpose**: Animated gauge components for current readings
 - **Features**:
   - Dynamic gauge HTML generation
@@ -117,8 +123,10 @@
 ### Configuration
 
 #### `js/config/sensors.config.js` (247 lines)
+
 - **Purpose**: Sensor definitions & metadata
 - **Structure**:
+
   ```javascript
   const SENSORS = {
     suhu: { id, group, label, unit, min, max, topics, fieldNames, chart, threshold, gauge, precision },
@@ -127,12 +135,13 @@
     tds: { ... },
     suhuAir: { ... }
   }
-  
+
   const SENSOR_GROUPS = {
     lingkungan: { id, label, subLabel, sensors: [...] },
     nutrisi: { id, label, subLabel, sensors: [...] }
   }
   ```
+
 - **5 Configured Sensors**:
   - `suhu` (Suhu Udara / Air Temp) — 0-100°C, chart max 100
   - `kelembapan` (Humidity) — 0-100%, chart max 100
@@ -144,13 +153,14 @@
   - `nutrisi` (Nutrition): ec, tds, suhuAir
 
 #### `js/config/config.js` & `config.local.js` (46 + 57 lines)
+
 - **Public Config** (`config.js`):
   ```javascript
-  window.MQTT_CONFIG = { brokerUrl, username, password, topicXY, topicBSK }
-  window.INFLUX_CONFIG = { host, db, interval }
-  window.BACKEND_CONFIG = { enabled, transport, baseUrl, endpoints }
-  window.OPENMETEO_CONFIG = { enabled, latitude, longitude, timezone, city }
-  window.TELEGRAM_CONFIG = { enabled, botToken, chatId }
+  window.MQTT_CONFIG = { brokerUrl, username, password, topicXY, topicBSK };
+  window.INFLUX_CONFIG = { host, db, interval };
+  window.BACKEND_CONFIG = { enabled, transport, baseUrl, endpoints };
+  window.OPENMETEO_CONFIG = { enabled, latitude, longitude, timezone, city };
+  window.TELEGRAM_CONFIG = { enabled, botToken, chatId };
   ```
 - **Local Config** (`config.local.js` — gitignored):
   - Actual credentials (MQTT broker, InfluxDB, Telegram)
@@ -159,9 +169,11 @@
 ### Core Application Logic
 
 #### `js/core/script.js` (1,012 lines)
+
 **Main application orchestrator**
 
 **Sections**:
+
 1. **User Authentication** (lines ~1-100)
    - USERS object: `{ admin, petani }`
    - Default credentials: `admin/admin123`, `petani/petani123`
@@ -209,6 +221,7 @@
 ### Machine Learning System
 
 #### `ml-engine.js` (525 lines)
+
 **Local ML prediction engine with seasonal modeling**
 
 **Key Components**:
@@ -227,7 +240,7 @@
      - `difficulty`: Mudah/Sedang/Sulit
    - Example: **Kangkung**
      ```javascript
-     ideal: { tempMin: 25, tempMax: 32, humMin: 60, humMax: 90, 
+     ideal: { tempMin: 25, tempMax: 32, humMin: 60, humMax: 90,
               ecMin: 2.1, ecMax: 2.8, tdsMin: 1050, tdsMax: 1400, wtMin: 20, wtMax: 28 }
      seasonFit: [0.9,0.9,0.9,0.8,0.7,0.7,0.7,0.7,0.8,0.9,0.9,0.9]
      stageWeights: { seedling: 0.2, vegetative: 0.6, harvest: 0.2 }
@@ -258,14 +271,17 @@
    - Calculates success rate (0-100%)
 
 7. **Main Prediction Function** (lines ~467-520)
+
    ```javascript
    mlPredict() → { predictions, features, projections, dataPointCount, currentMonth }
    ```
+
    - Returns ranked list of suitable crops
    - Fallback to single reading if < 3 data points
    - Exported to window for recommendations.js
 
 #### `recommendations.js` (243 lines)
+
 **Render ML recommendation panel**
 
 **Key Functions**:
@@ -298,23 +314,27 @@
 ### Entry Point: `index.html` (6.2 KB)
 
 **External Libraries (CDN)**:
+
 ```html
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mqtt/5.3.5/mqtt.min.js"></script>
 ```
 
 **Charting Library**: **Chart.js v4.4.1**
+
 - UMD build from CDN
 - Used for multi-sensor time-series line charts
 - Responsive with custom animations
 - Tooltip customization
 
 **MQTT Library**: **mqtt.js v5.3.5**
+
 - WebSocket/WebSocket Secure support
 - Browser-compatible MQTT client
 - Message subscriptions & publishing
 
 **Script Load Order** (matters for dependencies):
+
 ```
 1. config.js (base config)
 2. config.local.js (credentials override)
@@ -331,6 +351,7 @@
 ```
 
 **HTML Sections**:
+
 1. **Login Page** (`#login-page`):
    - Username/password form
    - Simple in-memory auth (no backend)
@@ -353,6 +374,7 @@
 ### File: `style.css` (1,338 lines)
 
 **Color System** (CSS Variables):
+
 ```css
 Light Mode:
   --bg: #f4f6f0 (light green background)
@@ -370,6 +392,7 @@ Dark Mode:
 ```
 
 **Component Classes**:
+
 - `.gauge-card` — Sensor reading card with progress bar
 - `.chart-card` — Container for Chart.js canvas
 - `.btn`, `.btn-outline`, `.btn-green` — Button variants
@@ -383,16 +406,19 @@ Dark Mode:
 - `.section-header`, `.section-line` — Section styling
 
 **Responsive Breakpoints**:
+
 - Desktop: Full width
 - Tablet (768px): Adjusted grid columns
 - Mobile (480px): Single column layout (inferred from grid)
 
 **Fonts**:
+
 - Primary: Inter (weights: 300, 400, 500, 600, 700)
 - Accent: Outfit (weights: 400, 500, 600, 700, 800)
 - From Google Fonts CDN
 
 **Visual Effects**:
+
 - Shadows: --shadow-xs, --shadow-sm, --shadow-md, --shadow-lg
 - Border radius: --radius-sm, --radius-md, --radius-lg, --radius-xl
 - Dual-theme support (~600 lines for light + dark variants)
@@ -456,7 +482,7 @@ Parallel: UI Updates
     │  - Progress bar width            │
     │  - Status class (warn/danger)    │
     └──────────────────────────────────┘
-    
+
     ┌──────────────────────────────────┐
     │  Chart Manager                   │
     │  - Push data point to dataset    │
@@ -497,6 +523,7 @@ Async: ML Prediction & Weather
 ## 6. KEY FEATURES IMPLEMENTED
 
 ### 1. **Real-Time Sensor Monitoring**
+
 - MQTT over WebSocket connection (auto-reconnect with fallback brokers)
 - 5 dual-sensor readings (temp, humidity, EC, TDS, water temp)
 - Live gauge visualization with progress bars
@@ -504,6 +531,7 @@ Async: ML Prediction & Weather
 - Dual-theme UI (light/dark mode)
 
 ### 2. **Data Visualization with Chart.js**
+
 - Multi-line charts per sensor group (Environment & Nutrition)
 - Real-time chart updates with 400ms smooth animation
 - Responsive canvas sizing
@@ -511,6 +539,7 @@ Async: ML Prediction & Weather
 - Chart destruction & recreation on refresh
 
 **Chart Configuration**:
+
 ```javascript
 {
   type: 'line',
@@ -520,7 +549,7 @@ Async: ML Prediction & Weather
     maintainAspectRatio: false,
     animation: { duration: 400, easing: 'easeOutQuart' },
     interaction: { mode: 'index', intersect: false },
-    scales: { 
+    scales: {
       x: { /* time labels */ },
       y: { min: 0, max: ymax /* per group */ }
     },
@@ -530,6 +559,7 @@ Async: ML Prediction & Weather
 ```
 
 ### 3. **Machine Learning Model (Local)**
+
 - **Approach**: Statistical model + rule-based scoring (no neural networks)
 - **Data**: Stores up to 5,000 sensor readings in localStorage
 - **Features**: Mean, std dev, trend (linear regression) per sensor
@@ -541,6 +571,7 @@ Async: ML Prediction & Weather
   - Returns success rate 0-100%
 
 **Crop List**:
+
 1. **Selada** (Lettuce) — Easy, 45 days, 18-24°C, 50-70% RH
 2. **Bayam** (Spinach) — Easy, 30 days, 16-28°C, 50-70% RH
 3. **Kangkung** (Water Spinach) — Easy, 30 days, 25-32°C, 60-90% RH
@@ -556,12 +587,13 @@ Async: ML Prediction & Weather
 13. **Melon** (Cantaloupe) — Medium, 90 days, 25-32°C, 50-65% RH
 
 ### 4. **Weather API Integration (Open-Meteo)**
+
 - **Free API**: No authentication required
 - **Data Points**:
   - Current: temperature, weather code, rain intensity, precipitation
   - Hourly: wind speed, soil temperature, soil moisture (24-hour history)
 - **Update Interval**: 30 minutes refresh
-- **WMO Code Mapping**: 
+- **WMO Code Mapping**:
   ```
   0: Cerah (Clear)
   1: Sebagian Berawan (Partly Cloudy)
@@ -576,6 +608,7 @@ Async: ML Prediction & Weather
   - Influences crop suitability scoring
 
 **API Endpoint**:
+
 ```
 https://api.open-meteo.com/v1/forecast?
   latitude=-8.65
@@ -587,6 +620,7 @@ https://api.open-meteo.com/v1/forecast?
 ```
 
 ### 5. **Threshold Violation Detection & Alerts**
+
 - Per-sensor min/max thresholds (configurable by admin)
 - 60-second cooldown per sensor to prevent alert spam
 - Three alert levels:
@@ -602,6 +636,7 @@ https://api.open-meteo.com/v1/forecast?
   - Requires bot token + chat ID configuration
 
 ### 6. **Authentication & Role-Based Access**
+
 - Simple in-memory user database:
   ```
   admin / admin123 → admin role
@@ -617,6 +652,7 @@ https://api.open-meteo.com/v1/forecast?
   - Data reset functionality
 
 ### 7. **Event Logging & Audit Trail**
+
 - Timestamped log entries:
   ```
   [12:34:56] OK: MQTT Connected
@@ -628,7 +664,8 @@ https://api.open-meteo.com/v1/forecast?
 - Displayed in collapsible log panel
 
 ### 8. **Data Export & Persistence**
-- **Sensor Data CSV**: 
+
+- **Sensor Data CSV**:
   - Time, all sensor values
   - Download button (admin-only)
   - Triggered via SensorService.downloadCSV()
@@ -645,10 +682,13 @@ https://api.open-meteo.com/v1/forecast?
 ## 7. CONFIGURATION FILES & API KEYS
 
 ### `config.local.js` (Sample from reference)
+
 ```javascript
 window.MQTT_CONFIG = {
   brokerUrl: 'ws://45.39.198.19:9001',
-  brokerUrls: [ /* 3 fallbacks */ ],
+  brokerUrls: [
+    /* 3 fallbacks */
+  ],
   username: 'candes',
   password: 'candestampan',
   topicXY: 'sensor/xy-md02',
@@ -658,14 +698,14 @@ window.MQTT_CONFIG = {
 window.INFLUX_CONFIG = {
   host: 'http://192.168.0.79:8086',
   db: 'sensor_db',
-  interval: 5000,  // 5-sec poll
+  interval: 5000, // 5-sec poll
 };
 
 window.BACKEND_CONFIG = {
   enabled: false,
   transport: 'mqtt_direct',
   baseUrl: 'http://45.39.198.19:8000',
-  endpoints: { latest, health, stream }
+  endpoints: { latest, health, stream },
 };
 
 window.OPENMETEO_CONFIG = {
@@ -684,7 +724,9 @@ window.TELEGRAM_CONFIG = {
 ```
 
 ### MQTT Message Format
+
 **Expected JSON payload** on topics:
+
 ```javascript
 {
   suhu: 28.5,           // Temperature °C
@@ -696,6 +738,7 @@ window.TELEGRAM_CONFIG = {
 ```
 
 ### Open-Meteo API (Free, No Auth)
+
 - Latitude/Longitude based
 - Returns JSON with hourly + current data
 - 30-minute update interval
@@ -706,11 +749,13 @@ window.TELEGRAM_CONFIG = {
 
 **Images/Icons**: None (emoji icons used: 🌾🌡️💧📊🥬🥒🍅🌶️, etc.)
 
-**Fonts**: 
+**Fonts**:
+
 - Inter (Google Fonts) — UI typography
 - Outfit (Google Fonts) — Headings/accent
 
-**Stylesheets**: 
+**Stylesheets**:
+
 - 1,338 lines of custom CSS (no Bootstrap/Tailwind)
 - Dual-theme support (light/dark)
 
@@ -718,26 +763,27 @@ window.TELEGRAM_CONFIG = {
 
 ## 9. DATA STORAGE LOCATIONS
 
-| Data | Storage | Key | Max Size |
-|------|---------|-----|----------|
-| Current Sensor Readings | Memory (DataStore) | — | 5 values |
-| Sensor History | Memory | — | 20 entries/sensor |
-| ML Training Records | localStorage | `agrisense_ml_data` | 5,000 records |
-| Session Info | localStorage | `agrisense_session` | 1 object (small) |
-| Thresholds Config | localStorage | `agrisense_thresholds` | 5-10KB |
-| Theme Preference | localStorage | `agrisense_theme` | "light" or "dark" |
-| Datastore (optional) | localStorage | `agrisense_datastore` | ~100KB (disabled) |
+| Data                    | Storage            | Key                    | Max Size          |
+| ----------------------- | ------------------ | ---------------------- | ----------------- |
+| Current Sensor Readings | Memory (DataStore) | —                      | 5 values          |
+| Sensor History          | Memory             | —                      | 20 entries/sensor |
+| ML Training Records     | localStorage       | `agrisense_ml_data`    | 5,000 records     |
+| Session Info            | localStorage       | `agrisense_session`    | 1 object (small)  |
+| Thresholds Config       | localStorage       | `agrisense_thresholds` | 5-10KB            |
+| Theme Preference        | localStorage       | `agrisense_theme`      | "light" or "dark" |
+| Datastore (optional)    | localStorage       | `agrisense_datastore`  | ~100KB (disabled) |
 
 ---
 
-## 10. RECOMMENDED PORTING STRATEGY FOR ASTRO PROJECT
+## 10. RECOMMENDED PORTING STRATEGY FOR NEXT.JS PROJECT
 
 ### Direct Ports (Can reuse largely as-is)
+
 1. ✅ **Services**: mqtt-manager.ts, data-store.ts, threshold-service.ts, sensor-service.ts
    - Already service-oriented, minimal view dependencies
    - Convert to TypeScript classes
 
-2. ✅ **ML Engine**: ml-engine.js 
+2. ✅ **ML Engine**: ml-engine.js
    - Pure algorithm, no DOM dependencies
    - Port to TypeScript function library
 
@@ -746,59 +792,63 @@ window.TELEGRAM_CONFIG = {
    - Excellent TypeScript candidate
 
 ### Partial Adaptation Required
+
 4. 🔄 **Chart Manager**: chart-manager.ts
-   - Replace Chart.js Canvas with Astro/React component integration
+   - Replace Chart.js Canvas with Next.js/React component integration
    - Keep data update logic
    - Your project already uses Chart.js v4.4.1 ✅
 
 5. 🔄 **Gauge Renderer**: gauge-renderer.ts
    - Already CSS-based, minimal DOM manipulation
-   - Adapt to Astro component rendering
+   - Adapt to Next.js component rendering
    - CSS classes compatible with existing globals.css
 
 6. 🔄 **Recommendations Panel**: recommendations.ts
    - Pure rendering logic
-   - Adapt to Astro/React component
+   - Adapt to Next.js/React component
 
 ### Architecture Reuse
+
 - ✅ Sensor definitions (5 sensors, 2 groups)
 - ✅ ML crop knowledge base (13 crops, complete scoring)
 - ✅ Threshold management pattern
 - ✅ Event logging system
 - ✅ Weather API integration
-- ✅ Authentication (already in Astro project)
+- ✅ Authentication (already in Next.js project)
 - ✅ localStorage persistence keys
 
 ---
 
-## 11. COMPARISON WITH ASTRO MONITORING PROJECT
+## 11. COMPARISON WITH NEXT.JS MONITORING PROJECT
 
-| Feature | Reference | Astro Project | Status |
-|---------|-----------|---------------|---------|
-| MQTT Manager | ✅ 361 lines | ✅ Already implemented | Align implementations |
-| Data Store | ✅ 131 lines | ✅ Already implemented | Align API |
-| Threshold Service | ✅ 159 lines | ✅ Already implemented | Verify feature parity |
-| Sensor Service | ✅ 181 lines | ✅ Already implemented | Compare | 
-| Chart.js Integration | ✅ 174 lines | ✅ Already using v4.4.1 | Adopt manager pattern |
-| Gauges | ✅ 116 lines | ✅ Exists | Compare CSS |
-| ML Engine | ✅ 525 lines | ❌ Missing | **MAJOR FEATURE TO PORT** |
-| Recommendations UI | ✅ 243 lines | ❌ Missing | **NEW COMPONENT** |
-| Weather API | ✅ Integrated | ❌ Missing | **NEW INTEGRATION** |
-| Telegram Alerts | ✅ Supported | ❌ Missing | Optional enhancement |
-| 13-crop ML Model | ✅ Complete | ❌ Missing | **CRITICAL PORT** |
+| Feature              | Reference     | Next.js Project         | Status                    |
+| -------------------- | ------------- | ----------------------- | ------------------------- |
+| MQTT Manager         | ✅ 361 lines  | ✅ Already implemented  | Align implementations     |
+| Data Store           | ✅ 131 lines  | ✅ Already implemented  | Align API                 |
+| Threshold Service    | ✅ 159 lines  | ✅ Already implemented  | Verify feature parity     |
+| Sensor Service       | ✅ 181 lines  | ✅ Already implemented  | Compare                   |
+| Chart.js Integration | ✅ 174 lines  | ✅ Already using v4.4.1 | Adopt manager pattern     |
+| Gauges               | ✅ 116 lines  | ✅ Exists               | Compare CSS               |
+| ML Engine            | ✅ 525 lines  | ❌ Missing              | **MAJOR FEATURE TO PORT** |
+| Recommendations UI   | ✅ 243 lines  | ❌ Missing              | **NEW COMPONENT**         |
+| Weather API          | ✅ Integrated | ❌ Missing              | **NEW INTEGRATION**       |
+| Telegram Alerts      | ✅ Supported  | ❌ Missing              | Optional enhancement      |
+| 13-crop ML Model     | ✅ Complete   | ❌ Missing              | **CRITICAL PORT**         |
 
 ---
 
 ## 12. KEY INSIGHTS FOR FEATURE PORTING
 
 ### ML Model Architecture
+
 - **Not using**: Neural networks, TensorFlow.js, complex algorithms
 - **Using**: Statistical summaries (mean, std, trend) + rule-based crop scoring
 - **Why**: Lightweight, transparent, works with small datasets (30+ readings)
 - **Implementation**: Pure functions, no external ML library needed
-- **Portability**: 100% portable to Astro/TypeScript
+- **Portability**: 100% portable to Next.js/TypeScript
 
 ### Weather Integration
+
 - **API**: Open-Meteo (free, no auth required)
 - **Update**: Every 30 minutes
 - **Usage**: Enhances ML crop recommendations
@@ -806,12 +856,14 @@ window.TELEGRAM_CONFIG = {
 - **Portability**: Simple async fetch, easy to integrate
 
 ### Data Flow Philosophy
+
 - **Streaming**: Real-time MQTT → immediate UI update
 - **Batch Processing**: ML happens on-demand when rendering recommendations
 - **Persistence**: critical config in localStorage, sensor history in RAM
 - **Scalability**: Current design handles 20 readings/sensor fine, could extend to 5000+ in ML storage
 
 ### Performance Considerations
+
 - Chart.js animation set to 400ms (smooth but quick)
 - Max 20 history entries in active display (memory efficient)
 - ML feature extraction on 50-point window (fast)
@@ -831,10 +883,11 @@ The reference project is a **production-ready, lightweight IoT dashboard** built
 5. **Data Intelligence**: Threshold alerts, event logging, CSV export
 
 **Most Valuable for Porting**:
+
 - Complete ML crop knowledge base (13 crops with thresholds)
 - Seasonal projection algorithm
 - Weather API integration pattern
 - Recommendation rendering logic
 - Alert cooldown management
 
-Your Astro project already has the **foundation services implemented**. Adding the ML engine and weather integration would make it significantly more capable for farm decision-support.
+Your Next.js project already has the **foundation services implemented**. Adding the ML engine and weather integration would make it significantly more capable for farm decision-support.

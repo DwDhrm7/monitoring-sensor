@@ -1,6 +1,17 @@
-
-
-const MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const MONTH_NAMES = [
+  'Januari',
+  'Februari',
+  'Maret',
+  'April',
+  'Mei',
+  'Juni',
+  'Juli',
+  'Agustus',
+  'September',
+  'Oktober',
+  'November',
+  'Desember',
+];
 
 function summarizeProjection(projections, key) {
   const values = projections
@@ -43,7 +54,8 @@ function renderRecommendations() {
   const currentReadings = window.latestReadings || {};
 
   if (!result.features) {
-    container.innerHTML = '<p class="rec-waiting">Menunggu data sensor untuk memulai prediksi...</p>';
+    container.innerHTML =
+      '<p class="rec-waiting">Menunggu data sensor untuk memulai prediksi...</p>';
     return;
   }
 
@@ -68,8 +80,8 @@ function renderRecommendations() {
 
   // Only Admin can see dataset controls and counts
   const isAdmin = currentUser && currentUser.role === 'admin';
-  const downloadBtn = isAdmin 
-    ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:10px; margin-left:6px" onclick="mlExportDataset()">Unduh CSV</button>` 
+  const downloadBtn = isAdmin
+    ? `<button class="btn btn-outline btn-sm" style="padding:2px 6px; font-size:10px; margin-left:6px" onclick="mlExportDataset()">Unduh CSV</button>`
     : '';
   const dataCountHtml = isAdmin
     ? `<span class="ml-data-count">
@@ -100,7 +112,10 @@ function renderRecommendations() {
     { label: 'Suhu Air', value: currentReadings.waterTemp, unit: '°C', digits: 1 },
   ]
     .filter((item) => item.value !== null && item.value !== undefined && !isNaN(item.value))
-    .map((item) => `${item.label}: <strong>${Number(item.value).toFixed(item.digits)} ${item.unit}</strong>`)
+    .map(
+      (item) =>
+        `${item.label}: <strong>${Number(item.value).toFixed(item.digits)} ${item.unit}</strong>`
+    )
     .join(' · ');
 
   if (currentSensorItems) {
@@ -117,7 +132,10 @@ function renderRecommendations() {
       const tempBarH = p.temp !== null ? Math.min(100, (p.temp / 45) * 100) : 0;
       const humBarH = p.humidity !== null ? Math.min(100, p.humidity) : 0;
       const tempTitle = p.temp !== null ? `Suhu: ${p.temp.toFixed(1)}°C` : 'Suhu: belum ada data';
-      const humTitle = p.humidity !== null ? `Kelembapan: ${p.humidity.toFixed(0)}%` : 'Kelembapan: belum ada data';
+      const humTitle =
+        p.humidity !== null
+          ? `Kelembapan: ${p.humidity.toFixed(0)}%`
+          : 'Kelembapan: belum ada data';
       const tempLabel = p.temp !== null ? `${p.temp.toFixed(0)}°` : '–';
       html += `
         <div class="proj-month ${i === 0 ? 'current' : ''}">
@@ -146,56 +164,94 @@ function renderRecommendations() {
   html += '<div class="assessment-grid">';
   const tempAssessment = projectionAssessment('Suhu Proyeksi', projectionTemp, {
     format: (value) => `${value.toFixed(1)}°C`,
-    getStatus: (value) => value >= 20 && value <= 28 ? 'optimal' : value > 35 || value < 15 ? 'danger' : 'warning',
-    getText: (value) => value >= 20 && value <= 28 ? 'Ideal untuk sebagian besar tanaman' : value > 28 ? 'Cenderung panas, pilih tanaman tahan panas' : 'Cenderung sejuk, cocok tanaman tertentu',
+    getStatus: (value) =>
+      value >= 20 && value <= 28 ? 'optimal' : value > 35 || value < 15 ? 'danger' : 'warning',
+    getText: (value) =>
+      value >= 20 && value <= 28
+        ? 'Ideal untuk sebagian besar tanaman'
+        : value > 28
+          ? 'Cenderung panas, pilih tanaman tahan panas'
+          : 'Cenderung sejuk, cocok tanaman tertentu',
   });
   if (tempAssessment) html += tempAssessment;
 
   const humidityAssessment = projectionAssessment('Kelembapan Proyeksi', projectionHumidity, {
     format: (value) => `${value.toFixed(1)}%`,
-    getStatus: (value) => value >= 50 && value <= 75 ? 'optimal' : 'warning',
-    getText: (value) => value >= 50 && value <= 75 ? 'Kelembapan proyeksi masih ideal' : value > 75 ? 'Cenderung tinggi, ada risiko jamur' : 'Cenderung rendah, perlu antisipasi kelembapan',
+    getStatus: (value) => (value >= 50 && value <= 75 ? 'optimal' : 'warning'),
+    getText: (value) =>
+      value >= 50 && value <= 75
+        ? 'Kelembapan proyeksi masih ideal'
+        : value > 75
+          ? 'Cenderung tinggi, ada risiko jamur'
+          : 'Cenderung rendah, perlu antisipasi kelembapan',
   });
   if (humidityAssessment) html += humidityAssessment;
 
   const ecAssessment = projectionAssessment('EC Proyeksi', projectionEc, {
     format: (value) => `${value.toFixed(1)} µS/cm`,
-    getStatus: (value) => value >= 1.0 && value <= 2.5 ? 'optimal' : value > 4 ? 'danger' : 'warning',
-    getText: (value) => value >= 1.0 && value <= 2.5 ? 'Nutrisi proyeksi cukup seimbang' : value > 2.5 ? 'Cenderung pekat, lebih cocok tanaman kebutuhan tinggi' : 'Cenderung rendah, nutrisi mungkin perlu ditambah',
+    getStatus: (value) =>
+      value >= 1.0 && value <= 2.5 ? 'optimal' : value > 4 ? 'danger' : 'warning',
+    getText: (value) =>
+      value >= 1.0 && value <= 2.5
+        ? 'Nutrisi proyeksi cukup seimbang'
+        : value > 2.5
+          ? 'Cenderung pekat, lebih cocok tanaman kebutuhan tinggi'
+          : 'Cenderung rendah, nutrisi mungkin perlu ditambah',
   });
   if (ecAssessment) html += ecAssessment;
 
   const waterTempAssessment = projectionAssessment('Suhu Air Proyeksi', projectionWaterTemp, {
     format: (value) => `${value.toFixed(1)}°C`,
-    getStatus: (value) => value >= 18 && value <= 26 ? 'optimal' : 'warning',
-    getText: (value) => value >= 18 && value <= 26 ? 'Masih optimal untuk penyerapan akar' : value > 26 ? 'Cenderung hangat, risiko bakteri meningkat' : 'Cenderung dingin, penyerapan nutrisi bisa melambat',
+    getStatus: (value) => (value >= 18 && value <= 26 ? 'optimal' : 'warning'),
+    getText: (value) =>
+      value >= 18 && value <= 26
+        ? 'Masih optimal untuk penyerapan akar'
+        : value > 26
+          ? 'Cenderung hangat, risiko bakteri meningkat'
+          : 'Cenderung dingin, penyerapan nutrisi bisa melambat',
   });
   if (waterTempAssessment) html += waterTempAssessment;
   html += '</div>';
 
   // ── Stability Indicator ────────────────────────────────────
   if (features.temp.std !== null && dataPointCount >= 5) {
-    const stability = features.temp.std < 2 ? 'Sangat Stabil' : features.temp.std < 5 ? 'Cukup Stabil' : 'Fluktuatif';
-    const stabClass = features.temp.std < 2 ? 'optimal' : features.temp.std < 5 ? 'warning' : 'danger';
+    const stability =
+      features.temp.std < 2
+        ? 'Sangat Stabil'
+        : features.temp.std < 5
+          ? 'Cukup Stabil'
+          : 'Fluktuatif';
+    const stabClass =
+      features.temp.std < 2 ? 'optimal' : features.temp.std < 5 ? 'warning' : 'danger';
     html += `<div class="stability-badge ${stabClass}">Stabilitas data sumber: <strong>${stability}</strong> (σ = ${features.temp.std.toFixed(2)}°C) · ${dataPointCount} pembacaan. Nilai ini dipakai untuk membentuk proyeksi 6 bulan, bukan ditampilkan sebagai kondisi saat ini.</div>`;
   }
 
   // ── Crop Predictions ───────────────────────────────────────
-  const topCrops = predictions.filter(p => p.successRate >= 30);
+  const topCrops = predictions.filter((p) => p.successRate >= 30);
   if (topCrops.length > 0) {
-    html += '<div class="crop-section-title">Prediksi Tanaman — Tanam Sekarang, Panen 6 Bulan</div>';
+    html +=
+      '<div class="crop-section-title">Prediksi Tanaman — Tanam Sekarang, Panen 6 Bulan</div>';
     html += '<div class="crop-grid">';
-    topCrops.forEach(pred => {
+    topCrops.forEach((pred) => {
       const c = pred.crop;
       const lvl = pred.successRate >= 75 ? 'excellent' : pred.successRate >= 55 ? 'good' : 'fair';
-      const lvlLabel = pred.successRate >= 75 ? 'Sangat Direkomendasikan' : pred.successRate >= 55 ? 'Direkomendasikan' : 'Bisa Dicoba';
-      const diffClass = c.difficulty === 'Mudah' ? 'easy' : c.difficulty === 'Sedang' ? 'medium' : 'hard';
+      const lvlLabel =
+        pred.successRate >= 75
+          ? 'Sangat Direkomendasikan'
+          : pred.successRate >= 55
+            ? 'Direkomendasikan'
+            : 'Bisa Dicoba';
+      const diffClass =
+        c.difficulty === 'Mudah' ? 'easy' : c.difficulty === 'Sedang' ? 'medium' : 'hard';
 
-      const harvestStr = pred.harvestDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
+      const harvestStr = pred.harvestDate.toLocaleDateString('id-ID', {
+        month: 'long',
+        year: 'numeric',
+      });
 
       let riskHtml = '';
       if (pred.risks.length > 0) {
-        riskHtml = `<div class="crop-risks">${pred.risks.map(r => `<span class="risk-tag">${r}</span>`).join('')}</div>`;
+        riskHtml = `<div class="crop-risks">${pred.risks.map((r) => `<span class="risk-tag">${r}</span>`).join('')}</div>`;
       }
 
       html += `
@@ -223,7 +279,8 @@ function renderRecommendations() {
     });
     html += '</div>';
   } else {
-    html += '<div class="rec-waiting">Proyeksi 6 bulan saat ini belum menunjukkan kondisi yang cocok. Kumpulkan lebih banyak data atau atur nutrisi untuk memperbaiki prediksi.</div>';
+    html +=
+      '<div class="rec-waiting">Proyeksi 6 bulan saat ini belum menunjukkan kondisi yang cocok. Kumpulkan lebih banyak data atau atur nutrisi untuk memperbaiki prediksi.</div>';
   }
 
   container.innerHTML = html;

@@ -110,8 +110,7 @@ class DataStore {
 
   getSummaryStats(sensorId) {
     const hist = this.history[sensorId] || [];
-    if (hist.length === 0)
-      return { count: 0, min: null, max: null, avg: null };
+    if (hist.length === 0) return { count: 0, min: null, max: null, avg: null };
 
     const values = hist.map((h) => h.value);
     const min = Math.min(...values);

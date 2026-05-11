@@ -5,12 +5,7 @@ describe('Dashboard Integration Tests - MQTT & Sensors', () => {
   describe('Sensor Data Processing Integration', () => {
     it('should handle sensor data from all configured topics', () => {
       // Simulating receiving data from sensor/xy-md02 topic
-      const testTopics = [
-        'sensor/xy-md02',
-        'sensor/xy',
-        'xy-md02',
-        'xy',
-      ];
+      const testTopics = ['sensor/xy-md02', 'sensor/xy', 'xy-md02', 'xy'];
 
       const messageData = { suhu: 25.5, kelembapan: 65.2 };
 
@@ -22,12 +17,7 @@ describe('Dashboard Integration Tests - MQTT & Sensors', () => {
 
     it('should extract field values using configured field names', () => {
       // Simulate different field name formats from MQTT messages
-      const fieldNameVariants = [
-        { suhu: 28 },
-        { temperature: 28 },
-        { temp: 28 },
-        { T: 28 },
-      ];
+      const fieldNameVariants = [{ suhu: 28 }, { temperature: 28 }, { temp: 28 }, { T: 28 }];
 
       const sensorFieldNames = ['suhu', 'temperature', 'temp', 'T'];
 

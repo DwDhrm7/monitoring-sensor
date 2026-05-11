@@ -9,7 +9,7 @@ dist/
 *.swp
 *.swo
 ~*
-.astro/
+.next/
 public/js/config/config.local.js
 public/js/config/sensors.config.local.js
 js/config/config.local.js

@@ -25,16 +25,14 @@ class MQTTManager {
       : [window.MQTT_CONFIG?.brokerUrl];
     const candidates = [];
 
-    configuredUrls
-      .filter(Boolean)
-      .forEach((rawUrl) => {
-        const normalizedVariants = this.normalizeBrokerUrl(rawUrl);
-        normalizedVariants.forEach((url) => {
-          if (!candidates.includes(url)) {
-            candidates.push(url);
-          }
-        });
+    configuredUrls.filter(Boolean).forEach((rawUrl) => {
+      const normalizedVariants = this.normalizeBrokerUrl(rawUrl);
+      normalizedVariants.forEach((url) => {
+        if (!candidates.includes(url)) {
+          candidates.push(url);
+        }
       });
+    });
 
     return candidates;
   }
@@ -43,9 +41,8 @@ class MQTTManager {
     try {
       const url = new URL(rawUrl);
       const variants = [];
-      const pathVariants = url.pathname && url.pathname !== '/'
-        ? [url.pathname]
-        : ['/mqtt', '/ws', '/'];
+      const pathVariants =
+        url.pathname && url.pathname !== '/' ? [url.pathname] : ['/mqtt', '/ws', '/'];
 
       pathVariants.forEach((pathname) => {
         const variant = new URL(url.toString());
@@ -104,7 +101,10 @@ class MQTTManager {
     }
 
     this.brokerIndex += 1;
-    console.warn('[MQTT] Mencoba endpoint WebSocket berikutnya:', this.brokerUrls[this.brokerIndex]);
+    console.warn(
+      '[MQTT] Mencoba endpoint WebSocket berikutnya:',
+      this.brokerUrls[this.brokerIndex]
+    );
     this.connectClient();
     return true;
   }
@@ -343,7 +343,7 @@ class MQTTManager {
   getStatus() {
     if (!this.isConnected) return 'disconnected';
     if (!this.hasReceivedMessage || !this.lastMessageTime) return 'connected_no_data';
-    
+
     const timeSinceMessage = Date.now() - this.lastMessageTime;
     if (timeSinceMessage > 30 * 1000) return 'connected_stale'; // 30s without data
 

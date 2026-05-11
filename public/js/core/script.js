@@ -145,7 +145,7 @@ function showDashboard() {
 function handleLogout() {
   try {
     console.log('[Auth] Logging out...');
-    
+
     // Disconnect MQTT
     if (typeof mqttManager !== 'undefined' && mqttManager) {
       mqttManager.disconnect();
@@ -154,25 +154,25 @@ function handleLogout() {
       clearInterval(backendPollTimer);
       backendPollTimer = null;
     }
-    
+
     // Clear intervals
     if (mqttStatusInterval) clearInterval(mqttStatusInterval);
     if (initTimer) clearTimeout(initTimer);
-    
+
     // Clear session
     clearSession();
     currentUser = null;
-    
+
     // Reset data store
     if (typeof dataStore !== 'undefined' && dataStore) {
       dataStore.reset();
     }
-    
+
     // Destroy charts
     if (typeof chartManager !== 'undefined' && chartManager) {
       chartManager.destroyAll();
     }
-    
+
     // Hide dashboard, show login
     const dashboard = document.getElementById('dashboard');
     const loginPage = document.getElementById('login-page');
@@ -182,7 +182,7 @@ function handleLogout() {
     const sensorSections = document.getElementById('sensor-sections');
     const chartSections = document.getElementById('chart-sections');
     const recommendationContent = document.getElementById('recommendation-content');
-    
+
     if (dashboard) dashboard.classList.remove('active');
     if (loginPage) loginPage.style.display = 'flex';
     if (document.getElementById('login-user')) document.getElementById('login-user').value = '';
@@ -195,7 +195,7 @@ function handleLogout() {
     if (recommendationContent) {
       recommendationContent.innerHTML = '<p class="rec-waiting">Menunggu data sensor...</p>';
     }
-    
+
     console.log('[Auth] Logout successful');
   } catch (err) {
     console.error('[Auth] Logout error:', err);
@@ -209,7 +209,7 @@ function handleLogout() {
 function initializeUI() {
   try {
     console.log('[UI] Initializing user interface...');
-    
+
     // Validate dependencies
     if (typeof SENSORS === 'undefined') {
       throw new Error('SENSORS configuration not loaded');
@@ -220,7 +220,7 @@ function initializeUI() {
     if (typeof chartManager === 'undefined') {
       throw new Error('chartManager not initialized');
     }
-    
+
     // Generate sensor sections with gauges
     console.log('[UI] Generating gauge sections...');
     const sensorSectionsHTML = getAllGroups()
@@ -229,7 +229,7 @@ function initializeUI() {
         return gaugeRenderer.createSectionHTML(group, sensors);
       })
       .join('');
-    
+
     const sensorContainer = document.getElementById('sensor-sections');
     if (!sensorContainer) {
       throw new Error('sensor-sections container not found in DOM');
@@ -242,7 +242,7 @@ function initializeUI() {
     const chartSectionsHTML = getAllGroups()
       .map((group) => chartManager.createChartHTML(group.id))
       .join('');
-    
+
     const chartContainer = document.getElementById('chart-sections');
     if (!chartContainer) {
       throw new Error('chart-sections container not found in DOM');
@@ -334,13 +334,18 @@ function showAlert(type, msg) {
   div.innerHTML = `<span>${alertPrefix} ${msg}</span><span class="alert-close" onclick="this.parentElement.remove()">×</span>`;
   c.prepend(div);
   setTimeout(() => div.remove(), 10000);
-  
+
   if (Notification.permission === 'granted') {
     new Notification('AgriSense Alert', { body: msg });
   }
-  
+
   // Telegram Integration
-  if (TELEGRAM_CONFIG && TELEGRAM_CONFIG.enabled && TELEGRAM_CONFIG.botToken && TELEGRAM_CONFIG.chatId) {
+  if (
+    TELEGRAM_CONFIG &&
+    TELEGRAM_CONFIG.enabled &&
+    TELEGRAM_CONFIG.botToken &&
+    TELEGRAM_CONFIG.chatId
+  ) {
     if (TELEGRAM_CONFIG.botToken !== 'YOUR_TELEGRAM_BOT_TOKEN') {
       sendTelegramAlert(`${alertPrefix} ${msg}`);
     }
@@ -355,9 +360,9 @@ function sendTelegramAlert(message) {
     body: JSON.stringify({
       chat_id: TELEGRAM_CONFIG.chatId,
       text: `*AgriSense Alert*\n${message}`,
-      parse_mode: 'Markdown'
-    })
-  }).catch(err => console.error("Telegram alert error:", err));
+      parse_mode: 'Markdown',
+    }),
+  }).catch((err) => console.error('Telegram alert error:', err));
 }
 
 function addLog(level, msg) {
@@ -370,14 +375,16 @@ function addLog(level, msg) {
   while (el.children.length > 100) el.lastChild.remove();
 }
 
-function clearLog() { document.getElementById('log-body').innerHTML = ''; }
+function clearLog() {
+  document.getElementById('log-body').innerHTML = '';
+}
 
 function toggleEditThreshold(isEditing, isCancel = false) {
   const inputs = document.querySelectorAll('.threshold-item input');
-  inputs.forEach(input => {
+  inputs.forEach((input) => {
     input.disabled = !isEditing;
   });
-  
+
   document.getElementById('btn-edit-thr').style.display = isEditing ? 'none' : 'inline-flex';
   document.getElementById('btn-cancel-thr').style.display = isEditing ? 'inline-flex' : 'none';
   document.getElementById('btn-save-thr').style.display = isEditing ? 'inline-flex' : 'none';
@@ -391,31 +398,31 @@ function toggleEditThreshold(isEditing, isCancel = false) {
 function saveThresholdsButtonClick() {
   const inputs = document.querySelectorAll('.threshold-item input');
   let errorCount = 0;
-  
-  inputs.forEach(input => {
+
+  inputs.forEach((input) => {
     const match = input.id.match(/thr-(\w+)-(min|max)$/);
     if (!match) return;
-    
+
     const [_, sensorId, minmax] = match;
     const value = parseFloat(input.value);
     const fullSensorId = sensorId === 'temp-bsk' ? 'suhuAir' : sensorId;
-    
+
     if (isNaN(value)) {
       addLog('error', `Nilai ${fullSensorId} tidak valid`);
       errorCount++;
       return;
     }
-    
+
     // Get current thresholds for this sensor
     const currentThresholds = thresholdService.getThreshold(fullSensorId) || {};
     const newThresholds = { ...currentThresholds };
-    
+
     if (minmax === 'min') {
       newThresholds.min = value;
     } else {
       newThresholds.max = value;
     }
-    
+
     // Validate min <= max
     if (newThresholds.min !== undefined && newThresholds.max !== undefined) {
       if (newThresholds.min > newThresholds.max) {
@@ -424,10 +431,10 @@ function saveThresholdsButtonClick() {
         return;
       }
     }
-    
+
     thresholdService.setThreshold(fullSensorId, newThresholds.min, newThresholds.max);
   });
-  
+
   if (errorCount === 0) {
     addLog('ok', 'Konfigurasi disimpan');
     toggleEditThreshold(false);
@@ -438,21 +445,29 @@ function saveThresholdsButtonClick() {
 window.weatherData = null;
 
 const WMO_CODES = {
-  0: {desc: 'Cerah'},
-  1: {desc: 'Sebagian Berawan'},
-  2: {desc: 'Berawan'},
-  3: {desc: 'Mendung'},
-  45: {desc: 'Berkabut'}, 48: {desc: 'Kabut Embun'},
-  51: {desc: 'Gerimis Ringan'}, 53: {desc: 'Gerimis'}, 55: {desc: 'Gerimis Lebat'},
-  61: {desc: 'Hujan Ringan'}, 63: {desc: 'Hujan Sedang'}, 65: {desc: 'Hujan Lebat'},
-  71: {desc: 'Salju Ringan'}, 73: {desc: 'Salju'}, 75: {desc: 'Salju Lebat'},
-  95: {desc: 'Badai Petir'}, 96: {desc: 'Badai Petir & Hujan Es'}
+  0: { desc: 'Cerah' },
+  1: { desc: 'Sebagian Berawan' },
+  2: { desc: 'Berawan' },
+  3: { desc: 'Mendung' },
+  45: { desc: 'Berkabut' },
+  48: { desc: 'Kabut Embun' },
+  51: { desc: 'Gerimis Ringan' },
+  53: { desc: 'Gerimis' },
+  55: { desc: 'Gerimis Lebat' },
+  61: { desc: 'Hujan Ringan' },
+  63: { desc: 'Hujan Sedang' },
+  65: { desc: 'Hujan Lebat' },
+  71: { desc: 'Salju Ringan' },
+  73: { desc: 'Salju' },
+  75: { desc: 'Salju Lebat' },
+  95: { desc: 'Badai Petir' },
+  96: { desc: 'Badai Petir & Hujan Es' },
 };
 
 // ── Refresh Handler ──────────────────────────────────────────
 function handleRefresh() {
   addLog('ok', 'Melakukan refresh data...');
-  
+
   // Disconnect current connection
   if (mqttManager) {
     mqttManager.disconnect();
@@ -465,19 +480,19 @@ function handleRefresh() {
     clearInterval(mqttStatusInterval);
     mqttStatusInterval = null;
   }
-  
+
   // Reset data store
   dataStore.reset();
-  
+
   // Destroy chart instances
   chartManager.destroyAll();
-  
+
   // Re-initialize UI
   initializeUI();
-  
+
   // Reconnect to data source
   initRealtimeConnection();
-  
+
   addLog('ok', 'Refresh selesai');
 }
 
@@ -505,7 +520,8 @@ function setConnectionStatus(status) {
   }
 
   if (status === 'connected' || status === 'connected_live') {
-    document.getElementById('last-update').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+    document.getElementById('last-update').textContent =
+      'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
   }
 }
 
@@ -515,28 +531,31 @@ async function fetchWeather() {
     const lat = OPENMETEO_CONFIG.latitude;
     const lon = OPENMETEO_CONFIG.longitude;
     const tz = encodeURIComponent(OPENMETEO_CONFIG.timezone);
-    
+
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,rain,precipitation&hourly=precipitation_probability,precipitation,rain,wind_speed_10m,soil_temperature_18cm,soil_moisture_1_to_3cm&timezone=${tz}&past_days=7`;
-    
+
     const res = await fetch(url);
     if (!res.ok) throw new Error('Open-Meteo API Error');
     const data = await res.json();
-    
+
     const current = data.current;
-    
+
     // Find closest code or default to cloudy
     const code = current.weather_code;
-    const weatherInfo = WMO_CODES[code] || WMO_CODES[3]; 
+    const weatherInfo = WMO_CODES[code] || WMO_CODES[3];
 
     window.weatherData = {
       temp: current.temperature_2m,
       desc: weatherInfo.desc,
       rain: current.rain,
       precip: current.precipitation,
-      city: OPENMETEO_CONFIG.city
+      city: OPENMETEO_CONFIG.city,
     };
-    
-    addLog('ok', `Info Cuaca: ${window.weatherData.city} - ${weatherInfo.desc} (${current.temperature_2m}°C)`);
+
+    addLog(
+      'ok',
+      `Info Cuaca: ${window.weatherData.city} - ${weatherInfo.desc} (${current.temperature_2m}°C)`
+    );
     updateRecommendations(); // Re-render ML with weather data
   } catch (e) {
     addLog('warn', 'Gagal memuat cuaca Open-Meteo: ' + e.message);
@@ -555,14 +574,21 @@ function updateRecommendations() {
     humidity: dataStore.readings.kelembapan ?? null,
     ec: dataStore.readings.ec ?? null,
     tds: dataStore.readings.tds ?? null,
-    waterTemp: dataStore.readings.suhuAir ?? null
+    waterTemp: dataStore.readings.suhuAir ?? null,
+    phTanah: dataStore.readings.phTanah ?? null,
+    ecTanah: dataStore.readings.ecTanah ?? null,
+    nTanah: dataStore.readings.nTanah ?? null,
+    pTanah: dataStore.readings.pTanah ?? null,
+    kTanah: dataStore.readings.kTanah ?? null,
+    suhuTanah: dataStore.readings.suhuTanah ?? null,
+    kelembapanTanah: dataStore.readings.kelembapanTanah ?? null,
   };
-  
+
   // Feed data into ML collector for learning
   if (typeof mlRecordReading === 'function') {
     mlRecordReading(window.latestReadings);
   }
-  
+
   // Render ML predictions
   if (typeof renderRecommendations === 'function') {
     renderRecommendations();
@@ -596,7 +622,8 @@ function setConnectionStatus(status) {
   }
 
   if (status === 'connected' || status === 'connected_live') {
-    document.getElementById('last-update').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+    document.getElementById('last-update').textContent =
+      'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
   }
 }
 
@@ -726,7 +753,8 @@ async function fetchBackendLatest() {
     addLog('ok', 'Backend Python terhubung');
   }
   backendHasConnected = true;
-  document.getElementById('last-update').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+  document.getElementById('last-update').textContent =
+    'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
 }
 
 function startBackendPolling() {
@@ -734,7 +762,10 @@ function startBackendPolling() {
   backendHasConnected = false;
   setConnectionBadgeLabel();
   setConnectionStatus('connecting');
-  addLog('ok', `Menghubungkan ke backend Python (${buildBackendUrl(BACKEND_CONFIG.endpoints.latest)})...`);
+  addLog(
+    'ok',
+    `Menghubungkan ke backend Python (${buildBackendUrl(BACKEND_CONFIG.endpoints.latest)})...`
+  );
 
   const pollOnce = async () => {
     try {
@@ -771,7 +802,10 @@ function initRealtimeConnection() {
   }
 
   setConnectionStatus('error');
-  addLog('error', `Transport backend "${transport}" belum diimplementasikan. Gunakan "mqtt_direct" atau "http_poll".`);
+  addLog(
+    'error',
+    `Transport backend "${transport}" belum diimplementasikan. Gunakan "mqtt_direct" atau "http_poll".`
+  );
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -794,38 +828,40 @@ function initMQTT() {
 
       // Validate value is within sensor range
       if (isNaN(value) || value < sensor.min || value > sensor.max) {
-        console.warn(`[MQTT] Nilai ${value} untuk ${sensor.id} di luar range [${sensor.min}, ${sensor.max}]`);
+        console.warn(
+          `[MQTT] Nilai ${value} untuk ${sensor.id} di luar range [${sensor.min}, ${sensor.max}]`
+        );
         return;
       }
-      
+
       // Process through sensor service
       sensorService.handleReading(sensor.id, value, rawData, topic, timestamp);
-      
     } catch (err) {
       addLog('error', `Parse error: ${err.message}`);
       console.error('[MQTT]', err);
     }
   };
-  
+
   // Handle status changes
   const statusCallback = (status) => {
     setConnectionStatus(status);
-    
+
     if (status === 'connected_no_data') {
       addLog('warn', 'Koneksi MQTT belum dianggap aktif karena data sensor belum masuk');
     } else if (status === 'connected' || status === 'connected_live') {
       addLog('ok', 'MQTT terhubung');
-      
+
       if (Notification.permission === 'default') {
         Notification.requestPermission();
       }
-      
+
       // Update last-update timestamp
-      document.getElementById('last-update').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
-      
+      document.getElementById('last-update').textContent =
+        'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+
       // Clear status check interval if exists
       if (mqttStatusInterval) clearInterval(mqttStatusInterval);
-      
+
       // Monitor connection health - if no data for 30s, start fallback
       mqttStatusInterval = setInterval(() => {
         const mqttStatus = mqttManager.getStatus();
@@ -833,12 +869,11 @@ function initMQTT() {
           setConnectionStatus(mqttStatus);
         }
       }, 30000);
-      
     } else if (status === 'error') {
       addLog('error', 'MQTT error. Dashboard menunggu data MQTT berikutnya.');
     }
   };
-  
+
   // Connect via manager
   mqttManager.connect(mqttCallback, statusCallback);
 }
@@ -860,9 +895,9 @@ async function queryInflux(query) {
   const series = json?.results?.[0]?.series?.[0];
   if (!series) return [];
   const cols = series.columns;
-  return series.values.map(row => {
+  return series.values.map((row) => {
     const obj = {};
-    cols.forEach((c, i) => obj[c] = row[i]);
+    cols.forEach((c, i) => (obj[c] = row[i]));
     return obj;
   });
 }
@@ -870,27 +905,45 @@ async function queryInflux(query) {
 async function fetchInfluxData() {
   try {
     setConnectionStatus('connected');
-    
+
     // Fetch XY data (Temperature & Humidity)
     const xy = await queryInflux('SELECT * FROM sensor_suhu ORDER BY time DESC LIMIT 20');
     if (xy.length > 0) {
       const latestXY = xy[0];
       const suhu = latestXY.suhu || latestXY.temp || latestXY.temperature;
       const kelembapan = latestXY.kelembapan || latestXY.humidity;
-      
+
       if (suhu !== undefined) {
-        sensorService.handleReading('suhu', suhu, latestXY, 'influx', new Date().toLocaleTimeString('id-ID'));
+        sensorService.handleReading(
+          'suhu',
+          suhu,
+          latestXY,
+          'influx',
+          new Date().toLocaleTimeString('id-ID')
+        );
       }
       if (kelembapan !== undefined) {
-        sensorService.handleReading('kelembapan', kelembapan, latestXY, 'influx', new Date().toLocaleTimeString('id-ID'));
+        sensorService.handleReading(
+          'kelembapan',
+          kelembapan,
+          latestXY,
+          'influx',
+          new Date().toLocaleTimeString('id-ID')
+        );
       }
-      
+
       // Update XY chart with historical data
       const reversedXY = [...xy].reverse();
       if (chartManager.charts && chartManager.charts.lingkungan) {
-        chartManager.charts.lingkungan.data.labels = reversedXY.map(d => new Date(d.time).toLocaleTimeString('id-ID'));
-        chartManager.charts.lingkungan.data.datasets[0].data = reversedXY.map(d => d.suhu || d.temp || d.temperature);
-        chartManager.charts.lingkungan.data.datasets[1].data = reversedXY.map(d => d.kelembapan || d.humidity);
+        chartManager.charts.lingkungan.data.labels = reversedXY.map((d) =>
+          new Date(d.time).toLocaleTimeString('id-ID')
+        );
+        chartManager.charts.lingkungan.data.datasets[0].data = reversedXY.map(
+          (d) => d.suhu || d.temp || d.temperature
+        );
+        chartManager.charts.lingkungan.data.datasets[1].data = reversedXY.map(
+          (d) => d.kelembapan || d.humidity
+        );
         chartManager.charts.lingkungan.update();
       }
     }
@@ -902,34 +955,56 @@ async function fetchInfluxData() {
       const ec = latestBSK.ec || latestBSK.EC;
       const tds = latestBSK.tds || latestBSK.TDS;
       const temp = latestBSK.temperature || latestBSK.temp || latestBSK.suhu;
-      
+
       if (ec !== undefined) {
-        sensorService.handleReading('ec', ec, latestBSK, 'influx', new Date().toLocaleTimeString('id-ID'));
+        sensorService.handleReading(
+          'ec',
+          ec,
+          latestBSK,
+          'influx',
+          new Date().toLocaleTimeString('id-ID')
+        );
       }
       if (tds !== undefined) {
-        sensorService.handleReading('tds', tds, latestBSK, 'influx', new Date().toLocaleTimeString('id-ID'));
+        sensorService.handleReading(
+          'tds',
+          tds,
+          latestBSK,
+          'influx',
+          new Date().toLocaleTimeString('id-ID')
+        );
       }
       if (temp !== undefined) {
-        sensorService.handleReading('suhuAir', temp, latestBSK, 'influx', new Date().toLocaleTimeString('id-ID'));
+        sensorService.handleReading(
+          'suhuAir',
+          temp,
+          latestBSK,
+          'influx',
+          new Date().toLocaleTimeString('id-ID')
+        );
       }
-      
+
       // Update BSK chart with historical data
       const reversedBSK = [...bsk].reverse();
       if (chartManager.charts && chartManager.charts.nutrisi) {
-        chartManager.charts.nutrisi.data.labels = reversedBSK.map(d => new Date(d.time).toLocaleTimeString('id-ID'));
-        chartManager.charts.nutrisi.data.datasets[0].data = reversedBSK.map(d => d.ec || d.EC);
-        chartManager.charts.nutrisi.data.datasets[1].data = reversedBSK.map(d => d.tds || d.TDS);
-        chartManager.charts.nutrisi.data.datasets[2].data = reversedBSK.map(d => d.temperature || d.temp || d.suhu);
+        chartManager.charts.nutrisi.data.labels = reversedBSK.map((d) =>
+          new Date(d.time).toLocaleTimeString('id-ID')
+        );
+        chartManager.charts.nutrisi.data.datasets[0].data = reversedBSK.map((d) => d.ec || d.EC);
+        chartManager.charts.nutrisi.data.datasets[1].data = reversedBSK.map((d) => d.tds || d.TDS);
+        chartManager.charts.nutrisi.data.datasets[2].data = reversedBSK.map(
+          (d) => d.temperature || d.temp || d.suhu
+        );
         chartManager.charts.nutrisi.update();
       }
     }
 
     addLog('ok', 'Data fetched dari InfluxDB');
-    document.getElementById('last-update').textContent = 'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
+    document.getElementById('last-update').textContent =
+      'Diperbarui ' + new Date().toLocaleTimeString('id-ID');
 
     // Update recommendations
     updateRecommendations();
-
   } catch (err) {
     setConnectionStatus('error');
     addLog('error', 'InfluxDB error: ' + err.message);
@@ -945,28 +1020,31 @@ async function fetchWeather() {
     const lat = OPENMETEO_CONFIG.latitude;
     const lon = OPENMETEO_CONFIG.longitude;
     const tz = encodeURIComponent(OPENMETEO_CONFIG.timezone);
-    
+
     const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weather_code,rain,precipitation&hourly=precipitation_probability,precipitation,rain,wind_speed_10m,soil_temperature_18cm,soil_moisture_1_to_3cm&timezone=${tz}&past_days=7`;
-    
+
     const res = await fetch(url);
     if (!res.ok) throw new Error('Open-Meteo API Error');
     const data = await res.json();
-    
+
     const current = data.current;
-    
+
     // Find closest code or default to cloudy
     const code = current.weather_code;
-    const weatherInfo = WMO_CODES[code] || WMO_CODES[3]; 
+    const weatherInfo = WMO_CODES[code] || WMO_CODES[3];
 
     window.weatherData = {
       temp: current.temperature_2m,
       desc: weatherInfo.desc,
       rain: current.rain,
       precip: current.precipitation,
-      city: OPENMETEO_CONFIG.city
+      city: OPENMETEO_CONFIG.city,
     };
-    
-    addLog('ok', `Info Cuaca: ${window.weatherData.city} - ${weatherInfo.desc} (${current.temperature_2m}°C)`);
+
+    addLog(
+      'ok',
+      `Info Cuaca: ${window.weatherData.city} - ${weatherInfo.desc} (${current.temperature_2m}°C)`
+    );
     updateRecommendations(); // Re-render ML with weather data
   } catch (e) {
     addLog('warn', 'Gagal memuat cuaca Open-Meteo: ' + e.message);

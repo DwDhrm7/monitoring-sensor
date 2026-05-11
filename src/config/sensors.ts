@@ -227,7 +227,7 @@ export function getSensorById(id: string): SensorConfig | null {
 export function getSensorsByGroup(groupId: string): SensorConfig[] {
   const group = SENSOR_GROUPS[groupId];
   if (!group) return [];
-  return group.sensors.map(id => SENSORS[id]).filter(Boolean);
+  return group.sensors.map((id) => SENSORS[id]).filter(Boolean);
 }
 
 export function extractSensorValue(sensor: SensorConfig, data: Record<string, any>): number | null {
@@ -244,8 +244,8 @@ export function extractSensorValue(sensor: SensorConfig, data: Record<string, an
 }
 
 export function findSensorsByFieldName(fieldName: string): SensorConfig[] {
-  return Object.values(SENSORS).filter(sensor =>
-    sensor.fieldNames.some(fn => fn.toLowerCase() === fieldName.toLowerCase())
+  return Object.values(SENSORS).filter((sensor) =>
+    sensor.fieldNames.some((fn) => fn.toLowerCase() === fieldName.toLowerCase())
   );
 }
 

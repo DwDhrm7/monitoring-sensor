@@ -69,15 +69,9 @@ class GaugeRenderer {
 
     let level = null;
 
-    if (
-      sensorThreshold.min !== undefined &&
-      value < sensorThreshold.min
-    ) {
+    if (sensorThreshold.min !== undefined && value < sensorThreshold.min) {
       level = 'warn';
-    } else if (
-      sensorThreshold.max !== undefined &&
-      value > sensorThreshold.max
-    ) {
+    } else if (sensorThreshold.max !== undefined && value > sensorThreshold.max) {
       level = 'danger';
     }
 

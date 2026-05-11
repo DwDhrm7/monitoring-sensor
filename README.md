@@ -1,6 +1,6 @@
-# AgriSense Monitoring Dashboard — Astro Edition
+# AgriSense Monitoring Dashboard — Next.js Edition
 
-Modern, lightweight, and modular smart farm monitoring platform built with **Astro framework**. This project provides a robust dashboard for real-time sensor data visualization, machine learning-based crop recommendations, and automated alerts.
+Modern, lightweight, and modular smart farm monitoring platform built with **Next.js**. This project provides a robust dashboard for real-time sensor data visualization, machine learning-based crop recommendations, and automated alerts.
 
 ## ✨ Features
 
@@ -9,7 +9,7 @@ Modern, lightweight, and modular smart farm monitoring platform built with **Ast
 - 🌾 **Smart Recommendations**: ML-powered crop suitability analysis based on environmental conditions.
 - 🌙 **Modern UI/UX**: Premium design with dynamic Dark Mode support and responsive layout.
 - ⚠️ **Automated Alerts**: Threshold-based notifications for critical sensor values.
-- ⚡ **Astro Powered**: High performance, static site generation, and modern developer experience.
+- ⚡ **Next.js Powered**: High performance, server-side rendering, and modern developer experience.
 
 ## 🚀 Quick Start
 
@@ -57,9 +57,9 @@ window.MQTT_CONFIG = {
 
 ## 🏗️ Project Architecture
 
-This project is structured as an **Astro wrapper** around a modular vanilla JavaScript application:
+This project is structured as a **Next.js app** around a modular vanilla JavaScript application:
 
-- **Astro Component System**: Used for layout and page structure (`src/layouts`, `src/pages`).
+- **Next.js Component System**: Used for layout and page structure (`src/app`).
 - **Vanilla JS Core**: Complex logic, services, and state management reside in `public/js/` for maximum flexibility.
 - **ML Engine**: On-device machine learning in `public/ml-engine.js` for real-time recommendations.
 

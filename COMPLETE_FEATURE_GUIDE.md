@@ -1,21 +1,22 @@
 # AgriSense — Complete Implementation Summary
 
-**Status**: ✅ **FULL FEATURE PARITY ACHIEVED** — All reference project features ported to Astro/TypeScript
+**Status**: ✅ **FULL FEATURE PARITY ACHIEVED** — All reference project features ported to Next.js/TypeScript
 
 ---
 
 ## 🎯 Project Overview
 
-AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integrasi Machine Learning untuk prediksi tanaman dan Weather API integration. Versi ini adalah migrasi lengkap dari vanilla JavaScript ke **Astro + TypeScript** dengan **ZERO feature loss**.
+AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integrasi Machine Learning untuk prediksi tanaman dan Weather API integration. Versi ini adalah migrasi lengkap dari vanilla JavaScript ke **Next.js + TypeScript** dengan **ZERO feature loss**.
 
 ### What Changed
-| Aspect | Before | After |
-|--------|--------|-------|
-| Framework | Vanilla JS + HTML/CSS | Astro v4.5.0 + TypeScript |
-| Type Safety | None | Full TypeScript |
-| Build System | None (plain HTML) | Astro SSR + Hydration |
-| Testing | Manual | Vitest (32 tests) |
-| Code Organization | Single files | Service-based architecture |
+
+| Aspect            | Before                | After                       |
+| ----------------- | --------------------- | --------------------------- |
+| Framework         | Vanilla JS + HTML/CSS | Next.js v4.5.0 + TypeScript |
+| Type Safety       | None                  | Full TypeScript             |
+| Build System      | None (plain HTML)     | Next.js SSR + Hydration     |
+| Testing           | Manual                | Vitest (32 tests)           |
+| Code Organization | Single files          | Service-based architecture  |
 
 ---
 
@@ -24,6 +25,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ### Service Layer (9 Services)
 
 #### **1. mqtt-manager.ts** — MQTT Connection Lifecycle
+
 ```ts
 - Connection management dengan auto-reconnect
 - Multiple broker URL fallback (WS/WSS)
@@ -33,6 +35,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **2. data-store.ts** — Centralized State Management
+
 ```ts
 - In-memory sensor readings dengan history (20 entries max)
 - Statistics calculation (min, max, avg)
@@ -42,6 +45,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **3. threshold-service.ts** — Violation Detection
+
 ```ts
 - Per-sensor min/max thresholds
 - 60-second cooldown untuk prevent alert spam
@@ -50,6 +54,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **4. sensor-service.ts** — Reading Processor
+
 ```ts
 - Validasi & clamp nilai ke sensor range
 - Integration dengan dataStore × thresholdService
@@ -59,6 +64,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **5. auth-service.ts** — User Authentication
+
 ```ts
 - Login dengan username/password
 - Session management via localStorage (5 menit TTL)
@@ -68,6 +74,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **6. sensors.ts (Config)** — Sensor Definitions
+
 ```ts
 - 5 configured sensors: suhu, kelembapan, ec, tds, suhuAir
 - 2 sensor groups untuk UI: lingkungan, nutrisi
@@ -77,6 +84,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **7. ml-model.ts** — Crop Prediction Engine ⭐ NEW
+
 ```ts
 - 13 Indonesian crops dengan ideal ranges
 - Statistical prediction: mean, std dev, linear regression
@@ -89,6 +97,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **8. weather-service.ts** — Open-Meteo API Integration ⭐ NEW
+
 ```ts
 - Free weather API (no authentication)
 - Current conditions + hourly (24h) + daily (7d) forecasts
@@ -100,6 +109,7 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 ```
 
 #### **9. Global Styling (globals.css)** — 300+ lines
+
 ```ts
 - Dual-theme CSS variables (light/dark mode)
 - Component library: .gauge-card, .chart-card, .btn, .alert
@@ -110,10 +120,11 @@ AgriSense adalah dashboard monitoring sensor pertanian real-time dengan integras
 
 ---
 
-## 🎨 Components (Astro)
+## 🎨 Components (Next.js)
 
-### **Chart.astro** — Real-time Graphing ⭐ NEW
-```astro
+### **Chart.tsx** — Real-time Graphing ⭐ NEW
+
+```next
 Props:
   - groupId: string (e.g., "lingkungan")
   - groupLabel: string (e.g., "🌍 Lingkungan — ...")
@@ -127,8 +138,9 @@ Features:
   - Multi-sensor overlaid display
 ```
 
-### **Gauge.astro** — Animated Gauge Cards ⭐ NEW
-```astro
+### **Gauge.tsx** — Animated Gauge Cards ⭐ NEW
+
+```next
 Props:
   - sensorId, label, value, min, max, unit, icon
   - color (optional)
@@ -142,8 +154,9 @@ Features:
   - Responsive layout
 ```
 
-### **Recommendations.astro** — ML Predictions Panel ⭐ NEW
-```astro
+### **Recommendations.tsx** — ML Predictions Panel ⭐ NEW
+
+```next
 Props:
   - predictions: CropPrediction[] (sorted by success rate)
   - dataPointCount: number
@@ -160,14 +173,16 @@ Features:
   - 6-month projection summary
 ```
 
-### **DashboardLayout.astro** — Main Layout
+### **DashboardLayout.tsx** — Main Layout
+
 - Header dengan logo, tema toggle, user info, logout button
 - Container dengan max-width 1400px
 - Sticky header untuk mudah akses
 - Script imports untuk MQTT, ML, Weather
 
-### **Updated index.astro** — Dashboard Page ⭐ ENHANCED
-```astro
+### **Updated index.tsx** — Dashboard Page ⭐ ENHANCED
+
+```next
 Sections:
   1. Header dengan controls
   2. Alerts container (fixed top-right, auto-dismiss)
@@ -192,23 +207,24 @@ Client Script:
 
 ### Crops Database (13 Tanaman)
 
-| Crop | Icon | Category | Difficulty | Growth | Seasonality |
-|------|------|----------|------------|--------|-------------|
-| Kangkung | 🌿 | Sayuran | Mudah | 1 mo | Sepanjang tahun |
-| Bayam | 🥗 | Sayuran | Mudah | 1 mo | Sepanjang tahun |
-| Selada | 🥬 | Sayuran | Mudah | 1.5 mo | Jun-Agustus |
-| Mentimun | 🥒 | Sayuran | Mudah | 2 mo | Hangat |
-| Pakcoy | 🥬 | Sayuran | Mudah | 1.5 mo | Jun-Agustus |
-| Sawi | 🥬 | Sayuran | Mudah | 1.5 mo | Jun-Agustus |
-| Kemangi | 🌱 | Herba | Mudah | 2 mo | Sepanjang tahun |
-| Tomat | 🍅 | Sayuran | Sedang | 3 mo | Jun-Agustus |
-| Cabai | 🌶️ | Sayuran | Sedang | 4 mo | Jun-Agustus |
-| Seledri | 🌿 | Herba | Sedang | 3 mo | Jun-Agustus |
-| Melon | 🍈 | Buah | Sedang | 3 mo | Hangat |
-| Stroberi | 🍓 | Buah | Sulit | 4 mo | Sejuk |
-| Paprika | 🫑 | Sayuran | Sulit | 4 mo | Jun-Agustus |
+| Crop     | Icon | Category | Difficulty | Growth | Seasonality     |
+| -------- | ---- | -------- | ---------- | ------ | --------------- |
+| Kangkung | 🌿   | Sayuran  | Mudah      | 1 mo   | Sepanjang tahun |
+| Bayam    | 🥗   | Sayuran  | Mudah      | 1 mo   | Sepanjang tahun |
+| Selada   | 🥬   | Sayuran  | Mudah      | 1.5 mo | Jun-Agustus     |
+| Mentimun | 🥒   | Sayuran  | Mudah      | 2 mo   | Hangat          |
+| Pakcoy   | 🥬   | Sayuran  | Mudah      | 1.5 mo | Jun-Agustus     |
+| Sawi     | 🥬   | Sayuran  | Mudah      | 1.5 mo | Jun-Agustus     |
+| Kemangi  | 🌱   | Herba    | Mudah      | 2 mo   | Sepanjang tahun |
+| Tomat    | 🍅   | Sayuran  | Sedang     | 3 mo   | Jun-Agustus     |
+| Cabai    | 🌶️   | Sayuran  | Sedang     | 4 mo   | Jun-Agustus     |
+| Seledri  | 🌿   | Herba    | Sedang     | 3 mo   | Jun-Agustus     |
+| Melon    | 🍈   | Buah     | Sedang     | 3 mo   | Hangat          |
+| Stroberi | 🍓   | Buah     | Sulit      | 4 mo   | Sejuk           |
+| Paprika  | 🫑   | Sayuran  | Sulit      | 4 mo   | Jun-Agustus     |
 
 ### Prediction Algorithm
+
 ```
 rangeScore(value, min, max):
   - Sigmoid-based smooth falloff di luar range
@@ -225,6 +241,7 @@ Output: successRate(0-100%), avgScore, riskFactors[], recommendations
 ```
 
 ### Data Storage
+
 ```json
 // localStorage key: agrisense_ml_data
 [
@@ -241,6 +258,7 @@ Output: successRate(0-100%), avgScore, riskFactors[], recommendations
 ### Open-Meteo Endpoints
 
 **Current Weather**
+
 ```
 GET https://api.open-meteo.com/v1/forecast?
   latitude=<lat>&longitude=<lon>
@@ -249,6 +267,7 @@ GET https://api.open-meteo.com/v1/forecast?
 ```
 
 **Hourly Forecast**
+
 ```
 GET /forecast?
   latitude/longitude
@@ -257,6 +276,7 @@ GET /forecast?
 ```
 
 **Daily Forecast**
+
 ```
 GET /forecast?
   latitude/longitude
@@ -265,6 +285,7 @@ GET /forecast?
 ```
 
 ### WMO Code Mapping
+
 ```
 0: Cerah (☀️)
 1-3: Berawan (☁️)
@@ -276,6 +297,7 @@ GET /forecast?
 ```
 
 ### Sample Weather Response
+
 ```json
 {
   "city": "Jakarta",
@@ -296,7 +318,8 @@ GET /forecast?
 ## 🧪 Testing
 
 ### Test Files (32 tests, all passing)
-1. **__integration__.test.ts** (9 tests)
+
+1. \***\*integration**.test.ts\*\* (9 tests)
    - Auth service functions
    - DataStore operations
    - Basic utility checks
@@ -312,6 +335,7 @@ GET /forecast?
    - Broker URL normalization
 
 ### Run Tests
+
 ```bash
 npm run test:run      # Single run
 npm run test          # Watch mode with UI
@@ -323,23 +347,27 @@ npm run test:ui       # Opens Vitest UI in browser
 ## 🚀 Deployment
 
 ### Build for Production
+
 ```bash
 npm run build
 ```
 
 ### Environment Setup
+
 Update `src/config/mqtt.ts` dengan MQTT broker details:
+
 ```ts
 export const MQTT_CONFIG = {
   brokerUrl: 'wss://your-broker.com:8883',
   username: 'mqtt_user',
   password: 'mqtt_pass',
-  topicXY: 'sensor/xy-md02',    // Suhu + Humidity
-  topicBSK: 'sensor/bsk-ec100',  // EC, TDS, Water Temp
+  topicXY: 'sensor/xy-md02', // Suhu + Humidity
+  topicBSK: 'sensor/bsk-ec100', // EC, TDS, Water Temp
 };
 ```
 
 ### Browser Requirements
+
 - Modern browser dengan WebSocket support
 - localStorage enabled
 - Geolocation API (optional, untuk weather)
@@ -349,18 +377,19 @@ export const MQTT_CONFIG = {
 
 ## 📱 Responsive Breakpoints
 
-| Breakpoint | Use Case |
-|-----------|----------|
-| < 480px | Mobile phones |
-| 480px - 768px | Tablets (landscape) |
+| Breakpoint     | Use Case                           |
+| -------------- | ---------------------------------- |
+| < 480px        | Mobile phones                      |
+| 480px - 768px  | Tablets (landscape)                |
 | 768px - 1024px | Tablets (portrait) / Small laptops |
-| ≥ 1024px | Desktops / Large monitors |
+| ≥ 1024px       | Desktops / Large monitors          |
 
 ---
 
 ## 🔐 Security Notes
 
 ### Current Implementation (Development)
+
 - ✅ Session TTL: 5 minutes
 - ✅ Password stored in plain config (NOT production-ready)
 - ✅ localStorage untuk session tokens
@@ -368,6 +397,7 @@ export const MQTT_CONFIG = {
 - ⚠️ No CSRF protection
 
 ### For Production
+
 1. Move credentials ke environment variables
 2. Implement HTTPS/WSS only
 3. Add CSRF tokens
@@ -390,18 +420,18 @@ export const MQTT_CONFIG = {
 │   ├── ml-model.ts             (525 lines) ⭐ NEW
 │   └── weather-service.ts      (300 lines) ⭐ NEW
 ├── /components
-│   ├── Chart.astro             (120 lines) ⭐ NEW
-│   ├── Gauge.astro             (180 lines) ⭐ NEW
-│   └── Recommendations.astro   (380 lines) ⭐ NEW
+│   ├── Chart.tsx             (120 lines) ⭐ NEW
+│   ├── Gauge.tsx             (180 lines) ⭐ NEW
+│   └── Recommendations.tsx   (380 lines) ⭐ NEW
 ├── /config
 │   ├── mqtt.ts
 │   ├── sensors.ts              (247 lines, updated)
 │   └── sensors.test.ts
 ├── /layouts
-│   └── DashboardLayout.astro
+│   └── DashboardLayout.tsx
 ├── /pages
-│   ├── index.astro             (500 lines, enhanced) ⭐ UPDATED
-│   └── login.astro
+│   ├── index.tsx             (500 lines, enhanced) ⭐ UPDATED
+│   └── login.tsx
 ├── /styles
 │   └── globals.css             (300+ lines)
 └── env.d.ts
@@ -412,6 +442,7 @@ export const MQTT_CONFIG = {
 ## 🎓 How It All Works Together
 
 ### Data Flow
+
 ```
 MQTT Broker
     ↓
@@ -422,7 +453,7 @@ sensorService.handleReading()
     ├→ thresholdService.checkViolation() (check thresholds)
     ├→ mlModel.recordReading()          (collect for prediction)
     └→ Dashboard gauge update
-    
+
 mlModel.predict() [every 30s]
     ├→ extractFeatures(history)
     ├→ projectMonthlyConditions()
@@ -432,19 +463,20 @@ mlModel.predict() [every 30s]
 ```
 
 ### User Journey
+
 ```
 User visits /
     ↓
 Check auth (authService.isAuthenticated())
     ├→ Not logged in? → Redirect to /login
     └→ Logged in? → Continue
-    
+
 Dashboard mounts
     ├→ MQTT connect (auto-reconnect)
     ├→ Theme toggle initialize
     ├→ User info display
     └→ Start update intervals
-    
+
 Real-time updates
     ├→ Gauges: every MQTT message (~5s)
     ├→ Charts: every 5s refresh
@@ -471,7 +503,7 @@ Real-time updates
 - [x] 32 passing integration tests
 - [x] TypeScript type safety throughout
 - [x] localStorage persistence
-- [x] Astro SSR + hydration
+- [x] Next.js SSR + hydration
 
 ---
 
@@ -486,5 +518,5 @@ Real-time updates
 ---
 
 **Created**: 2025-03-31  
-**Framework**: Astro v4.5.0 + TypeScript 5.3.3  
+**Framework**: Next.js v4.5.0 + TypeScript 5.3.3  
 **Status**: ✅ Production-ready with zero feature loss from reference projet

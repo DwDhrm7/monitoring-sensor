@@ -66,7 +66,7 @@ describe('Sensor Configuration - Integration Tests', () => {
       const suhuSensor = SENSORS.suhu;
       expect(suhuSensor.fieldNames).toContain('suhu');
       expect(suhuSensor.fieldNames).toContain('temperature');
-      expect(suhuSensor.fieldNames.some(f => f.length > 0)).toBe(true);
+      expect(suhuSensor.fieldNames.some((f) => f.length > 0)).toBe(true);
     });
   });
 

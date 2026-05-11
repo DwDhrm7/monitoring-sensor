@@ -16,7 +16,15 @@ export interface MessageHandler {
 }
 
 export interface StatusChangeHandler {
-  (status: 'connecting' | 'connected_no_data' | 'connected_live' | 'connected_stale' | 'disconnected' | 'error'): void;
+  (
+    status:
+      | 'connecting'
+      | 'connected_no_data'
+      | 'connected_live'
+      | 'connected_stale'
+      | 'disconnected'
+      | 'error'
+  ): void;
 }
 
 export class MQTTManager {
@@ -40,16 +48,14 @@ export class MQTTManager {
       : [config.brokerUrl];
     const candidates: string[] = [];
 
-    configuredUrls
-      .filter(Boolean)
-      .forEach((rawUrl) => {
-        const normalizedVariants = this.normalizeBrokerUrl(rawUrl);
-        normalizedVariants.forEach((url) => {
-          if (!candidates.includes(url)) {
-            candidates.push(url);
-          }
-        });
+    configuredUrls.filter(Boolean).forEach((rawUrl) => {
+      const normalizedVariants = this.normalizeBrokerUrl(rawUrl);
+      normalizedVariants.forEach((url) => {
+        if (!candidates.includes(url)) {
+          candidates.push(url);
+        }
       });
+    });
 
     return candidates;
   }
@@ -59,9 +65,7 @@ export class MQTTManager {
       const url = new URL(rawUrl);
       const variants: string[] = [];
       const pathVariants =
-        url.pathname && url.pathname !== '/'
-          ? [url.pathname]
-          : ['/mqtt', '/ws', '/'];
+        url.pathname && url.pathname !== '/' ? [url.pathname] : ['/mqtt', '/ws', '/'];
 
       pathVariants.forEach((pathname) => {
         const variant = new URL(url.toString());
@@ -121,7 +125,10 @@ export class MQTTManager {
     }
 
     this.brokerIndex += 1;
-    console.warn('[MQTT] Mencoba endpoint WebSocket berikutnya:', this.brokerUrls[this.brokerIndex]);
+    console.warn(
+      '[MQTT] Mencoba endpoint WebSocket berikutnya:',
+      this.brokerUrls[this.brokerIndex]
+    );
     this.connectClient();
     return true;
   }
@@ -207,7 +214,10 @@ export class MQTTManager {
   }
 
   // Connect to MQTT broker
-  connect(onMessage: MessageHandler | undefined, onStatusChange: StatusChangeHandler | undefined): void {
+  connect(
+    onMessage: MessageHandler | undefined,
+    onStatusChange: StatusChangeHandler | undefined
+  ): void {
     if (this.client && this.isConnected) {
       console.log('[MQTT] Already connected');
       return;
