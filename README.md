@@ -1,4 +1,4 @@
-# AgriSense Monitoring Dashboard — Next.js Edition
+# AgriSense Monitoring Dashboard
 
 Modern, lightweight, and modular smart farm monitoring platform built with **Next.js**. This project provides a robust dashboard for real-time sensor data visualization, machine learning-based crop recommendations, and automated alerts.
 
@@ -63,6 +63,4 @@ This project is structured as a **Next.js app** around a modular vanilla JavaScr
 - **Vanilla JS Core**: Complex logic, services, and state management reside in `public/js/` for maximum flexibility.
 - **ML Engine**: On-device machine learning in `public/ml-engine.js` for real-time recommendations.
 
----
 
-**Built with ❤️ for modern agriculture monitoring**
